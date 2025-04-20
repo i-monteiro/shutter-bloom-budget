@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Budget, BudgetStatus } from "@/types/budget";
 import {
   Dialog,
@@ -30,34 +30,42 @@ export function StatusChangeDialog({
   onStatusChange,
   selectedStatus
 }: StatusChangeDialogProps) {
-  // Criamos um novo formulário sempre que o diálogo abrir ou o status mudar
-  const form = useForm<StatusFormData>({
-    defaultValues: {
-      amount: budget.amount,
-      installments: budget.installments || false,
-      installmentsCount: budget.installmentsCount,
-      firstPaymentDate: budget.firstPaymentDate,
-    }
+  // Create a fresh state for the form values to avoid React Hook Form issues
+  const [formValues, setFormValues] = useState({
+    amount: budget.amount,
+    installments: budget.installments || false,
+    installmentsCount: budget.installmentsCount,
+    firstPaymentDate: budget.firstPaymentDate,
   });
 
-  // Reinicializamos o formulário quando o diálogo abrir ou quando o orçamento/status mudar
+  // Create a new form instance
+  const form = useForm<StatusFormData>({
+    defaultValues: formValues
+  });
+
+  // Update form values when budget changes or dialog opens
   useEffect(() => {
     if (open) {
-      // Forçamos a reinicialização completa do formulário
-      form.reset({
+      const newValues = {
         amount: budget.amount,
         installments: budget.installments || false,
         installmentsCount: budget.installmentsCount,
         firstPaymentDate: budget.firstPaymentDate,
-      });
+      };
+      
+      // Update our local state
+      setFormValues(newValues);
+      
+      // Completely reset the form with new values
+      form.reset(newValues);
     }
   }, [open, budget, form, selectedStatus]);
 
-  // Função para lidar com a mudança do estado do diálogo
+  // Handle dialog open state changes
   const handleOpenChange = (newOpen: boolean) => {
+    // If dialog is closing, reset everything
     if (!newOpen) {
-      // Limpamos completamente o formulário antes de fechar
-      form.reset();
+      form.reset(); // Reset form state
     }
     onOpenChange(newOpen);
   };

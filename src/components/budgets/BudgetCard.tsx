@@ -9,7 +9,7 @@ import { CalendarDays, Edit, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBudgets } from "@/context/BudgetContext";
 import { StatusChangeDialog } from "./StatusChangeDialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,8 +38,9 @@ export function BudgetCard({ budget }: BudgetCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<'pending' | 'sent' | 'accepted' | 'rejected'>('pending');
-  // Um ID único para forçar a recriação do diálogo
-  const [dialogKey, setDialogKey] = useState(0);
+  
+  // Force fresh dialog on each render with a unique key
+  const dialogKey = statusDialogOpen ? Date.now() : 0;
 
   // Format currency
   const formattedAmount = budget.amount ? new Intl.NumberFormat('pt-BR', { 
@@ -50,22 +51,17 @@ export function BudgetCard({ budget }: BudgetCardProps) {
   // Handle status change
   const handleStatusSelect = (newStatus: "pending" | "sent" | "accepted" | "rejected") => {
     setSelectedStatus(newStatus);
-    // Incrementamos o key para forçar a recriação do componente
-    setDialogKey(prev => prev + 1);
-    setStatusDialogOpen(true);
+    // Only open dialog after state is set
+    setTimeout(() => {
+      setStatusDialogOpen(true);
+    }, 0);
   };
 
-  // Sempre que o diálogo fechar, vamos incrementar o key
-  useEffect(() => {
-    if (!statusDialogOpen) {
-      setTimeout(() => {
-        setDialogKey(prev => prev + 1);
-      }, 300); // Pequeno delay para garantir que o diálogo fechou completamente
-    }
-  }, [statusDialogOpen]);
-
+  // Handle status change from dialog
   const handleStatusChange = (id: string, newStatus: "pending" | "sent" | "accepted" | "rejected", data: any) => {
     updateStatus(id, newStatus, data);
+    // Ensure dialog is fully closed
+    setStatusDialogOpen(false);
   };
 
   // Handle edit
@@ -81,6 +77,11 @@ export function BudgetCard({ budget }: BudgetCardProps) {
   const confirmDelete = () => {
     deleteBudget(budget.id);
     setIsDeleting(false);
+  };
+
+  // Handle dialog open state changes
+  const handleDialogOpenChange = (isOpen: boolean) => {
+    setStatusDialogOpen(isOpen);
   };
 
   return (
@@ -132,15 +133,17 @@ export function BudgetCard({ budget }: BudgetCardProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Usando key para forçar a recriação do componente */}
-        <StatusChangeDialog
-          key={dialogKey}
-          budget={budget}
-          open={statusDialogOpen}
-          onOpenChange={setStatusDialogOpen}
-          onStatusChange={handleStatusChange}
-          selectedStatus={selectedStatus}
-        />
+        {/* Using a unique key to force a fresh dialog each time */}
+        {statusDialogOpen && (
+          <StatusChangeDialog
+            key={dialogKey}
+            budget={budget}
+            open={statusDialogOpen}
+            onOpenChange={handleDialogOpenChange}
+            onStatusChange={handleStatusChange}
+            selectedStatus={selectedStatus}
+          />
+        )}
         
         <div className="flex gap-2">
           <Button size="icon" variant="outline" onClick={handleEdit}>
