@@ -19,12 +19,13 @@ const EditBudget = () => {
     if (id) {
       const budget = getBudget(id);
       if (budget) {
-        const { clientName, phone, budgetDate, eventDate, amount, installments, installmentsCount, firstPaymentDate, status } = budget;
+        const { clientName, phone, budgetDate, eventDate, eventType, amount, installments, installmentsCount, firstPaymentDate, status } = budget;
         setBudgetData({
           clientName,
           phone,
           budgetDate,
           eventDate,
+          eventType,
           amount,
           installments,
           installmentsCount,
