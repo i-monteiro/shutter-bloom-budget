@@ -1,4 +1,3 @@
-
 import { Budget } from "@/types/budget";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { BudgetStatusBadge } from "@/components/ui/budget-status-badge";
@@ -39,37 +38,29 @@ export function BudgetCard({ budget }: BudgetCardProps) {
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<'pending' | 'sent' | 'accepted' | 'rejected'>('pending');
   
-  // Force fresh dialog on each render with a unique key
   const dialogKey = statusDialogOpen ? Date.now() : 0;
 
-  // Format currency
   const formattedAmount = budget.amount ? new Intl.NumberFormat('pt-BR', { 
     style: 'currency', 
     currency: 'BRL' 
   }).format(budget.amount) : 'Não definido';
 
-  // Handle status change
   const handleStatusSelect = (newStatus: "pending" | "sent" | "accepted" | "rejected") => {
     setSelectedStatus(newStatus);
-    // Only open dialog after state is set
     setTimeout(() => {
       setStatusDialogOpen(true);
     }, 0);
   };
 
-  // Handle status change from dialog
   const handleStatusChange = (id: string, newStatus: "pending" | "sent" | "accepted" | "rejected", data: any) => {
     updateStatus(id, newStatus, data);
-    // Ensure dialog is fully closed
     setStatusDialogOpen(false);
   };
 
-  // Handle edit
   const handleEdit = () => {
     navigate(`/budgets/edit/${budget.id}`);
   };
 
-  // Handle delete
   const handleDelete = () => {
     setIsDeleting(true);
   };
@@ -79,16 +70,27 @@ export function BudgetCard({ budget }: BudgetCardProps) {
     setIsDeleting(false);
   };
 
-  // Handle dialog open state changes
   const handleDialogOpenChange = (isOpen: boolean) => {
     setStatusDialogOpen(isOpen);
+  };
+
+  const eventTypeLabels = {
+    wedding: 'Casamento',
+    birthday: 'Aniversário',
+    corporate: 'Corporativo',
+    other: 'Outro'
   };
 
   return (
     <Card className="card-hover">
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
-          <h3 className="font-semibold text-lg">{budget.clientName}</h3>
+          <div>
+            <h3 className="font-semibold text-lg">{budget.clientName}</h3>
+            <span className="text-sm text-muted-foreground">
+              {eventTypeLabels[budget.eventType]}
+            </span>
+          </div>
           <BudgetStatusBadge status={budget.status} />
         </div>
 
@@ -133,7 +135,6 @@ export function BudgetCard({ budget }: BudgetCardProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Using a unique key to force a fresh dialog each time */}
         {statusDialogOpen && (
           <StatusChangeDialog
             key={dialogKey}

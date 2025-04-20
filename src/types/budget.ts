@@ -1,14 +1,17 @@
 
 export type BudgetStatus = 'pending' | 'sent' | 'accepted' | 'rejected';
 
+export type EventType = 'wedding' | 'birthday' | 'corporate' | 'other';
+
 export interface Budget {
   id: string;
   clientName: string;
   phone: string;
   budgetDate: Date;
   eventDate: Date;
-  amount?: number; // Opcional até status 'sent'
-  installments?: boolean; // Opcional até status 'accepted'
+  eventType: EventType;
+  amount?: number;
+  installments?: boolean;
   installmentsCount?: number;
   firstPaymentDate?: Date;
   status: BudgetStatus;
@@ -21,6 +24,7 @@ export interface BudgetFormData {
   phone: string;
   budgetDate: Date;
   eventDate: Date;
+  eventType: EventType;
   amount?: number;
   installments?: boolean;
   installmentsCount?: number;

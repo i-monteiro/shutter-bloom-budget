@@ -1,4 +1,3 @@
-
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,14 +24,52 @@ export function InstallmentsSection({ form }: InstallmentsSectionProps) {
   const watchInstallments = form.watch("installments");
 
   useEffect(() => {
-    // Inicializa os valores padrão se necessário
-    if (watchInstallments && form.getValues("installmentsCount") === undefined) {
+    if (!watchInstallments) {
       form.setValue("installmentsCount", 1);
     }
   }, [watchInstallments, form]);
 
   return (
     <>
+      <FormField
+        control={form.control}
+        name="firstPaymentDate"
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel>Data do Pagamento</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "pl-3 text-left font-normal",
+                      !field.value && "text-muted-foreground"
+                    )}
+                  >
+                    {field.value ? (
+                      format(field.value, "PPP", { locale: ptBR })
+                    ) : (
+                      <span>Selecione a data</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={field.onChange}
+                  locale={ptBR}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </FormItem>
+        )}
+      />
+
       <FormField
         control={form.control}
         name="installments"
@@ -52,65 +89,24 @@ export function InstallmentsSection({ form }: InstallmentsSectionProps) {
       />
 
       {watchInstallments && (
-        <div className="space-y-4 animate-fade-in">
-          <FormField
-            control={form.control}
-            name="installmentsCount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Número de Parcelas</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                    min="1" 
-                    max="36"
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="firstPaymentDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Data do 1º Pagamento</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", { locale: ptBR })
-                        ) : (
-                          <span>Selecione a data</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      locale={ptBR}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="installmentsCount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Número de Parcelas</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                  min="1" 
+                  max="36"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
       )}
     </>
   );
