@@ -54,21 +54,24 @@ export function BudgetForm({
 }: BudgetFormProps) {
   const [showInstallments, setShowInstallments] = useState(initialData?.installments || false);
 
-  const form = useForm<z.infer<typeof budgetFormSchema>>({
+  // Define default values that match the BudgetFormData interface
+  const defaultValues: BudgetFormData = {
+    clientName: "",
+    phone: "",
+    budgetDate: new Date(),
+    eventDate: new Date(),
+    amount: 0,
+    installments: false,
+    installmentsCount: 1,
+    firstPaymentDate: new Date(),
+  };
+
+  const form = useForm<BudgetFormData>({
     resolver: zodResolver(budgetFormSchema),
-    defaultValues: initialData || {
-      clientName: "",
-      phone: "",
-      budgetDate: new Date(),
-      eventDate: new Date(),
-      amount: 0,
-      installments: false,
-      installmentsCount: 1,
-      firstPaymentDate: new Date(),
-    },
+    defaultValues: initialData || defaultValues,
   });
 
-  function handleSubmit(data: z.infer<typeof budgetFormSchema>) {
+  function handleSubmit(data: BudgetFormData) {
     onSubmit(data);
   }
 
