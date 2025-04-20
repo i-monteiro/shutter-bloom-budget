@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Budget, BudgetFormData, BudgetStatus } from "@/types/budget";
 import { v4 as uuidv4 } from "uuid";
@@ -14,15 +15,15 @@ interface BudgetContextType {
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
 
-export const useBudgets = () => {
+export function useBudgets() {
   const context = useContext(BudgetContext);
   if (context === undefined) {
     throw new Error("useBudgets must be used within a BudgetProvider");
   }
   return context;
-};
+}
 
-export const BudgetProvider = ({ children }: { children: ReactNode }) => {
+export function BudgetProvider({ children }: { children: ReactNode }) {
   const [budgets, setBudgets] = useState<Budget[]>(() => {
     const savedBudgets = localStorage.getItem("budgets");
     if (savedBudgets) {
@@ -113,4 +114,4 @@ export const BudgetProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </BudgetContext.Provider>
   );
-};
+}
