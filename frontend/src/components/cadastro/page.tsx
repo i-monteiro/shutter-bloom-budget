@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 
 export default function CadastroPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -26,7 +26,7 @@ export default function CadastroPage() {
 
       if (response.ok) {
         setMensagem('Usuário criado com sucesso! Redirecionando...');
-        setTimeout(() => router.push('/login'), 2000);
+        setTimeout(() => navigate('/login'), 2000);
       } else {
         const errorData = await response.json();
         setMensagem(errorData.detail || 'Erro ao cadastrar usuário.');

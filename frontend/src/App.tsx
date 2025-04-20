@@ -15,6 +15,8 @@ import EditBudget from "./pages/EditBudget";
 import Events from "./pages/Events";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import LoginPage from "./pages/LoginPage"; // ajuste o caminho se estiver em outra pasta
+
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,7 @@ const App = () => (
               <Route path="/budgets/edit/:id" element={<EditBudget />} />
               <Route path="/events" element={<Events />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
