@@ -30,6 +30,7 @@ export function StatusChangeDialog({
   onStatusChange,
   selectedStatus
 }: StatusChangeDialogProps) {
+  // Criamos um novo formulário sempre que o diálogo abrir ou o status mudar
   const form = useForm<StatusFormData>({
     defaultValues: {
       amount: budget.amount,
@@ -39,9 +40,10 @@ export function StatusChangeDialog({
     }
   });
 
-  // Reinicializar o formulário quando o diálogo abrir ou quando o orçamento/status mudar
+  // Reinicializamos o formulário quando o diálogo abrir ou quando o orçamento/status mudar
   useEffect(() => {
     if (open) {
+      // Forçamos a reinicialização completa do formulário
       form.reset({
         amount: budget.amount,
         installments: budget.installments || false,
@@ -49,15 +51,13 @@ export function StatusChangeDialog({
         firstPaymentDate: budget.firstPaymentDate,
       });
     }
-  }, [open, budget, form]);
+  }, [open, budget, form, selectedStatus]);
 
-  // Resetar o formulário quando o diálogo fechar
+  // Função para lidar com a mudança do estado do diálogo
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
-      // Aguarda o diálogo fechar antes de resetar o formulário
-      setTimeout(() => {
-        form.reset();
-      }, 100);
+      // Limpamos completamente o formulário antes de fechar
+      form.reset();
     }
     onOpenChange(newOpen);
   };

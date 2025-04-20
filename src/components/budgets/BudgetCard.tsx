@@ -1,3 +1,4 @@
+
 import { Budget } from "@/types/budget";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { BudgetStatusBadge } from "@/components/ui/budget-status-badge";
@@ -8,7 +9,7 @@ import { CalendarDays, Edit, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBudgets } from "@/context/BudgetContext";
 import { StatusChangeDialog } from "./StatusChangeDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,8 @@ export function BudgetCard({ budget }: BudgetCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<'pending' | 'sent' | 'accepted' | 'rejected'>('pending');
+  // Um ID único para forçar a recriação do diálogo
+  const [dialogKey, setDialogKey] = useState(0);
 
   // Format currency
   const formattedAmount = budget.amount ? new Intl.NumberFormat('pt-BR', { 
@@ -47,8 +50,19 @@ export function BudgetCard({ budget }: BudgetCardProps) {
   // Handle status change
   const handleStatusSelect = (newStatus: "pending" | "sent" | "accepted" | "rejected") => {
     setSelectedStatus(newStatus);
+    // Incrementamos o key para forçar a recriação do componente
+    setDialogKey(prev => prev + 1);
     setStatusDialogOpen(true);
   };
+
+  // Sempre que o diálogo fechar, vamos incrementar o key
+  useEffect(() => {
+    if (!statusDialogOpen) {
+      setTimeout(() => {
+        setDialogKey(prev => prev + 1);
+      }, 300); // Pequeno delay para garantir que o diálogo fechou completamente
+    }
+  }, [statusDialogOpen]);
 
   const handleStatusChange = (id: string, newStatus: "pending" | "sent" | "accepted" | "rejected", data: any) => {
     updateStatus(id, newStatus, data);
@@ -118,7 +132,9 @@ export function BudgetCard({ budget }: BudgetCardProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* Usando key para forçar a recriação do componente */}
         <StatusChangeDialog
+          key={dialogKey}
           budget={budget}
           open={statusDialogOpen}
           onOpenChange={setStatusDialogOpen}
