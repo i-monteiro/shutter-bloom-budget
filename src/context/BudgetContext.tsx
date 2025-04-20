@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Budget, BudgetFormData, BudgetStatus } from "@/types/budget";
 import { v4 as uuidv4 } from "uuid";
@@ -9,7 +8,7 @@ interface BudgetContextType {
   addBudget: (budgetData: BudgetFormData) => void;
   updateBudget: (id: string, budgetData: BudgetFormData) => void;
   deleteBudget: (id: string) => void;
-  updateStatus: (id: string, newStatus: BudgetStatus) => void;
+  updateStatus: (id: string, newStatus: BudgetStatus, data?: any) => void;
   getBudget: (id: string) => Budget | undefined;
 }
 
@@ -79,11 +78,16 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
     toast.success("Orçamento excluído com sucesso!");
   };
 
-  const updateStatus = (id: string, newStatus: BudgetStatus) => {
+  const updateStatus = (id: string, newStatus: BudgetStatus, data?: any) => {
     setBudgets((prevBudgets) => 
       prevBudgets.map((budget) => 
         budget.id === id 
-          ? { ...budget, status: newStatus, updatedAt: new Date() }
+          ? {
+              ...budget,
+              ...data,
+              status: newStatus,
+              updatedAt: new Date()
+            }
           : budget
       )
     );

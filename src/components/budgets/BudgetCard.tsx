@@ -1,4 +1,3 @@
-
 import { Budget } from "@/types/budget";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { BudgetStatusBadge } from "@/components/ui/budget-status-badge";
@@ -8,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, Edit, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBudgets } from "@/context/BudgetContext";
+import { StatusChangeDialog } from "./StatusChangeDialog";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +26,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
 
 interface BudgetCardProps {
   budget: Budget;
@@ -35,16 +35,23 @@ export function BudgetCard({ budget }: BudgetCardProps) {
   const navigate = useNavigate();
   const { updateStatus, deleteBudget } = useBudgets();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<'pending' | 'sent' | 'accepted' | 'rejected'>('pending');
 
   // Format currency
-  const formattedAmount = new Intl.NumberFormat('pt-BR', { 
+  const formattedAmount = budget.amount ? new Intl.NumberFormat('pt-BR', { 
     style: 'currency', 
     currency: 'BRL' 
-  }).format(budget.amount);
+  }).format(budget.amount) : 'Não definido';
 
   // Handle status change
-  const handleStatusChange = (newStatus: "pending" | "sent" | "accepted" | "rejected") => {
-    updateStatus(budget.id, newStatus);
+  const handleStatusSelect = (newStatus: "pending" | "sent" | "accepted" | "rejected") => {
+    setSelectedStatus(newStatus);
+    setStatusDialogOpen(true);
+  };
+
+  const handleStatusChange = (id: string, newStatus: "pending" | "sent" | "accepted" | "rejected", data: any) => {
+    updateStatus(id, newStatus, data);
   };
 
   // Handle edit
@@ -96,20 +103,28 @@ export function BudgetCard({ budget }: BudgetCardProps) {
             <Button variant="outline" size="sm">Mudar Status</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect("pending")}>
               Pendente
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("sent")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect("sent")}>
               Enviado
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("accepted")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect("accepted")}>
               Aceito
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("rejected")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect("rejected")}>
               Recusado
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <StatusChangeDialog
+          budget={budget}
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
+          onStatusChange={handleStatusChange}
+          selectedStatus={selectedStatus}
+        />
         
         <div className="flex gap-2">
           <Button size="icon" variant="outline" onClick={handleEdit}>
