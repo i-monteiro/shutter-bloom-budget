@@ -1,7 +1,7 @@
 
 export interface StatusFormData {
-  amount?: number;
-  installments?: boolean;
-  installmentsCount?: number;
-  firstPaymentDate?: Date;
+  amount: number | undefined;
+  installments: boolean;
+  installmentsCount: number | undefined;
+  firstPaymentDate: Date | undefined;
 }

@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -32,7 +33,7 @@ export function StatusChangeDialog({
   const form = useForm<StatusFormData>({
     defaultValues: {
       amount: budget.amount,
-      installments: budget.installments,
+      installments: budget.installments || false,
       installmentsCount: budget.installmentsCount,
       firstPaymentDate: budget.firstPaymentDate,
     }
@@ -53,6 +54,14 @@ export function StatusChangeDialog({
              selectedStatus === 'rejected' ? 'Recusar Orçamento' : 
              'Definir como Pendente'}
           </DialogTitle>
+          <DialogDescription>
+            Preencha as informações necessárias para {
+              selectedStatus === 'sent' ? 'enviar o orçamento' : 
+              selectedStatus === 'accepted' ? 'aceitar o orçamento' :
+              selectedStatus === 'rejected' ? 'recusar o orçamento' : 
+              'definir como pendente'
+            }.
+          </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
