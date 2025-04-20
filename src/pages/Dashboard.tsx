@@ -19,7 +19,7 @@ const Dashboard = () => {
     // Calculate total revenue from accepted proposals
     const totalRevenue = budgets
       .filter(budget => budget.status === "accepted")
-      .reduce((total, budget) => total + budget.amount, 0);
+      .reduce((total, budget) => total + (budget.amount || 0), 0);
     
     return {
       totalBudgets,

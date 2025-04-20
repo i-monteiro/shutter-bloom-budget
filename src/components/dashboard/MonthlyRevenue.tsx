@@ -25,8 +25,12 @@ export function MonthlyRevenue({ budgets }: MonthlyRevenueProps) {
 
     // Calculate revenue per month based on installments
     acceptedBudgets.forEach((budget) => {
+      if (!budget.amount) return; // Skip if there's no amount
+      
       // If not installments, full amount on first payment date
       if (!budget.installments) {
+        if (!budget.firstPaymentDate) return; // Skip if there's no payment date
+        
         const paymentMonth = getMonth(budget.firstPaymentDate);
         // Only count this year's revenue
         if (getYear(budget.firstPaymentDate) === currentYear) {
@@ -34,6 +38,8 @@ export function MonthlyRevenue({ budgets }: MonthlyRevenueProps) {
         }
       } else {
         // Calculate installment amount
+        if (!budget.installmentsCount || budget.installmentsCount <= 0 || !budget.firstPaymentDate) return;
+        
         const installmentAmount = budget.amount / budget.installmentsCount;
         
         // Add each installment to the respective month
