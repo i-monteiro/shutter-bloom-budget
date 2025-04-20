@@ -47,7 +47,7 @@ const Sidebar = () => {
         <div className="flex flex-col h-full">
           {/* Logo / Header */}
           <div className="p-6 border-b">
-            <h1 className="text-2xl font-bold text-primary">ShutterBloom</h1>
+            <h1 className="text-2xl font-bold text-primary">Fotessence</h1>
             <p className="text-sm text-gray-500">Gestão de Orçamentos</p>
           </div>
 
