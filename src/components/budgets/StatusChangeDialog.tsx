@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect } from "react";
 import { Budget, BudgetStatus } from "@/types/budget";
 import {
   Dialog,
@@ -39,13 +39,36 @@ export function StatusChangeDialog({
     }
   });
 
+  // Reinicializar o formulário quando o diálogo abrir ou quando o orçamento/status mudar
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        amount: budget.amount,
+        installments: budget.installments || false,
+        installmentsCount: budget.installmentsCount,
+        firstPaymentDate: budget.firstPaymentDate,
+      });
+    }
+  }, [open, budget, form]);
+
+  // Resetar o formulário quando o diálogo fechar
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // Aguarda o diálogo fechar antes de resetar o formulário
+      setTimeout(() => {
+        form.reset();
+      }, 100);
+    }
+    onOpenChange(newOpen);
+  };
+
   const onSubmit = (data: StatusFormData) => {
     onStatusChange(budget.id, selectedStatus, data);
-    onOpenChange(false);
+    handleOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
@@ -75,7 +98,7 @@ export function StatusChangeDialog({
             )}
 
             <div className="flex justify-end gap-3">
-              <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" type="button" onClick={() => handleOpenChange(false)}>
                 Cancelar
               </Button>
               <Button type="submit">
