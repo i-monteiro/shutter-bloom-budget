@@ -34,7 +34,11 @@ const CreateBudget = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
-        <BudgetForm onSubmit={handleSubmit} buttonText="Criar Orçamento" />
+        <BudgetForm 
+          onSubmit={handleSubmit} 
+          buttonText="Criar Orçamento" 
+          budgetStatus="pending"
+        />
       </div>
     </div>
   );

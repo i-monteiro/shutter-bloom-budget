@@ -13,12 +13,13 @@ const EditBudget = () => {
   const { id } = useParams<{ id: string }>();
   const { getBudget, updateBudget } = useBudgets();
   const [budgetData, setBudgetData] = useState<BudgetFormData | null>(null);
+  const [budgetStatus, setBudgetStatus] = useState<'pending' | 'sent' | 'accepted' | 'rejected'>('pending');
 
   useEffect(() => {
     if (id) {
       const budget = getBudget(id);
       if (budget) {
-        const { clientName, phone, budgetDate, eventDate, amount, installments, installmentsCount, firstPaymentDate } = budget;
+        const { clientName, phone, budgetDate, eventDate, amount, installments, installmentsCount, firstPaymentDate, status } = budget;
         setBudgetData({
           clientName,
           phone,
@@ -29,6 +30,7 @@ const EditBudget = () => {
           installmentsCount,
           firstPaymentDate
         });
+        setBudgetStatus(status);
       } else {
         toast.error("Orçamento não encontrado");
         navigate("/budgets");
@@ -66,7 +68,12 @@ const EditBudget = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
-        <BudgetForm onSubmit={handleSubmit} initialData={budgetData} buttonText="Atualizar Orçamento" />
+        <BudgetForm 
+          onSubmit={handleSubmit} 
+          initialData={budgetData} 
+          buttonText="Atualizar Orçamento"
+          budgetStatus={budgetStatus}
+        />
       </div>
     </div>
   );

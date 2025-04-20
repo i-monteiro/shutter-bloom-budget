@@ -7,10 +7,10 @@ export interface Budget {
   phone: string;
   budgetDate: Date;
   eventDate: Date;
-  amount: number;
-  installments: boolean;
-  installmentsCount: number;
-  firstPaymentDate: Date;
+  amount?: number; // Opcional até status 'sent'
+  installments?: boolean; // Opcional até status 'accepted'
+  installmentsCount?: number;
+  firstPaymentDate?: Date;
   status: BudgetStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -21,8 +21,8 @@ export interface BudgetFormData {
   phone: string;
   budgetDate: Date;
   eventDate: Date;
-  amount: number;
-  installments: boolean;
-  installmentsCount: number;
-  firstPaymentDate: Date;
+  amount?: number;
+  installments?: boolean;
+  installmentsCount?: number;
+  firstPaymentDate?: Date;
 }

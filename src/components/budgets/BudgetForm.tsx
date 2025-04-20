@@ -27,48 +27,62 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
 
-// Define schema for the form
-const budgetFormSchema = z.object({
-  clientName: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
-  phone: z.string().min(8, "Telefone inválido"),
-  budgetDate: z.date(),
-  eventDate: z.date(),
-  amount: z.coerce.number().positive("Valor deve ser positivo"),
-  installments: z.boolean().default(false),
-  installmentsCount: z.coerce.number().int().min(1).max(36),
-  firstPaymentDate: z.date(),
-});
+// Define schema dinâmico para o formulário
+const createBudgetFormSchema = (showAmount: boolean, showInstallments: boolean) => {
+  const baseSchema = {
+    clientName: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
+    phone: z.string().min(8, "Telefone inválido"),
+    budgetDate: z.date(),
+    eventDate: z.date(),
+  };
+
+  const amountSchema = showAmount ? {
+    amount: z.coerce.number().positive("Valor deve ser positivo")
+  } : {};
+
+  const installmentsSchema = showInstallments ? {
+    installments: z.boolean().default(false),
+    installmentsCount: z.coerce.number().int().min(1).max(36).optional(),
+    firstPaymentDate: z.date().optional()
+  } : {};
+
+  return z.object({
+    ...baseSchema,
+    ...amountSchema,
+    ...installmentsSchema
+  });
+};
 
 interface BudgetFormProps {
   onSubmit: (data: BudgetFormData) => void;
   initialData?: BudgetFormData;
   buttonText?: string;
+  budgetStatus?: 'pending' | 'sent' | 'accepted' | 'rejected';
 }
 
 export function BudgetForm({ 
   onSubmit, 
   initialData, 
-  buttonText = "Salvar Orçamento" 
+  buttonText = "Salvar Orçamento",
+  budgetStatus = 'pending'
 }: BudgetFormProps) {
-  const [showInstallments, setShowInstallments] = useState(initialData?.installments || false);
-
-  // Define default values that match the BudgetFormData interface
-  const defaultValues: BudgetFormData = {
-    clientName: "",
-    phone: "",
-    budgetDate: new Date(),
-    eventDate: new Date(),
-    amount: 0,
-    installments: false,
-    installmentsCount: 1,
-    firstPaymentDate: new Date(),
-  };
+  const showAmount = budgetStatus === 'sent' || budgetStatus === 'accepted';
+  const showInstallments = budgetStatus === 'accepted';
+  const [showInstallmentsFields, setShowInstallmentsFields] = useState(initialData?.installments || false);
 
   const form = useForm<BudgetFormData>({
-    resolver: zodResolver(budgetFormSchema),
-    defaultValues: initialData || defaultValues,
+    resolver: zodResolver(createBudgetFormSchema(showAmount, showInstallments)),
+    defaultValues: {
+      clientName: initialData?.clientName || "",
+      phone: initialData?.phone || "",
+      budgetDate: initialData?.budgetDate || new Date(),
+      eventDate: initialData?.eventDate || new Date(),
+      amount: initialData?.amount || 0,
+      installments: initialData?.installments || false,
+      installmentsCount: initialData?.installmentsCount || 1,
+      firstPaymentDate: initialData?.firstPaymentDate || new Date(),
+    },
   });
 
   function handleSubmit(data: BudgetFormData) {
@@ -141,7 +155,6 @@ export function BudgetForm({
                       onSelect={field.onChange}
                       locale={ptBR}
                       initialFocus
-                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
@@ -182,7 +195,6 @@ export function BudgetForm({
                       onSelect={field.onChange}
                       locale={ptBR}
                       initialFocus
-                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
@@ -192,7 +204,7 @@ export function BudgetForm({
           />
         </div>
 
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+        {showAmount && (
           <FormField
             control={form.control}
             name="amount"
@@ -213,94 +225,97 @@ export function BudgetForm({
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="installments"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 mt-8">
-                <FormControl>
-                  <Checkbox 
-                    checked={field.value} 
-                    onCheckedChange={(checked) => {
-                      field.onChange(checked);
-                      setShowInstallments(!!checked);
-                    }} 
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Parcelado</FormLabel>
-                  <FormDescription>
-                    Marque se o valor será parcelado
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
-          />
-        </div>
+        )}
 
         {showInstallments && (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 animate-slide-in">
+          <>
             <FormField
               control={form.control}
-              name="installmentsCount"
+              name="installments"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Número de Parcelas</FormLabel>
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field} 
-                      min="1" 
-                      max="36"
+                    <Checkbox 
+                      checked={field.value} 
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        setShowInstallmentsFields(!!checked);
+                      }} 
                     />
                   </FormControl>
-                  <FormMessage />
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Parcelado</FormLabel>
+                    <FormDescription>
+                      Marque se o valor será parcelado
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="firstPaymentDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Data do 1º Pagamento</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
+            {showInstallmentsFields && (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 animate-slide-in">
+                <FormField
+                  control={form.control}
+                  name="installmentsCount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Número de Parcelas</FormLabel>
                       <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP", { locale: ptBR })
-                          ) : (
-                            <span>Selecione a data</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          min="1" 
+                          max="36"
+                        />
                       </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        locale={ptBR}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="firstPaymentDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Data do 1º Pagamento</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", { locale: ptBR })
+                              ) : (
+                                <span>Selecione a data</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            locale={ptBR}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </>
         )}
 
         <div className="flex justify-end">
