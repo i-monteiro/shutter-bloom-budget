@@ -25,21 +25,20 @@ class Event(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     
-    nomeCliente  = Column(String(100), nullable=False)
-    tipoEvento  = Column(String(100), nullable=False)
-    dataOrcamento  = Column(Date, nullable=False)
-    dataEvento  = Column(Date, nullable=False)
+    nomeCliente = Column(String(100), nullable=False)
+    tipoEvento = Column(String(100), nullable=False)
+    dataOrcamento = Column(Date, nullable=False)
+    dataEvento = Column(Date, nullable=False)
     status = Column(Enum(EventStatus), default=EventStatus.orcamento_recebido)
 
-    valorEvento  = Column(Float)                     # Pode ser DECIMAL se quiser exatidão
-    iraParcelar  = Column(Boolean, default=False)
-    quantParcelas  = Column(Integer)
-    dataPrimeiroPagamento  = Column(Date)
+    valorEvento = Column(Float, nullable=True)
+    iraParcelar = Column(Boolean, default=False, nullable=True)
+    quantParcelas = Column(Integer, nullable=True)
+    dataPrimeiroPagamento = Column(Date, nullable=True)
     contatoCliente = Column(String(20), nullable=True)
-    motivoRecusa = Column(String, nullable=True)  # ✅ novo campo
-
+    motivoRecusa = Column(String, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    user = relationship("User", backref="events")    # Se quiser relacionar com User
+    user = relationship("User", backref="events")

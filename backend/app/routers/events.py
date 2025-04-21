@@ -8,7 +8,6 @@ from app.auth.auth_handler import get_current_user
 
 router = APIRouter()
 
-# ✅ Correção aplicada aqui: filtra por current_user.id
 @router.get("/events/", response_model=List[EventOut])
 def list_events(
     db: Session = Depends(get_db),
@@ -56,29 +55,16 @@ def update_event(event_id: int, updates: EventUpdate, db: Session = Depends(get_
     if not db_event:
         raise HTTPException(status_code=404, detail="Evento não encontrado")
 
-    # Atualiza somente campos que foram enviados
-    if updates.nomeCliente is not None:
-        db_event.nomeCliente = updates.nomeCliente
-    if updates.tipoEvento is not None:
-        db_event.tipoEvento = updates.tipoEvento
-    if updates.dataOrcamento is not None:
-        db_event.dataOrcamento = updates.dataOrcamento
-    if updates.dataEvento is not None:
-        db_event.dataEvento = updates.dataEvento
-    if updates.status is not None:
-        db_event.status = updates.status
-    if updates.valorEvento is not None:
-        db_event.valorEvento = updates.valorEvento
-    if updates.iraParcelar is not None:
-        db_event.iraParcelar = updates.iraParcelar
-    if updates.quantParcelas is not None:
-        db_event.quantParcelas = updates.quantParcelas
-    if updates.dataPrimeiroPagamento is not None:
-        db_event.dataPrimeiroPagamento = updates.dataPrimeiroPagamento  
-    if updates.contatoCliente is not None:
-        db_event.contatoCliente = updates.contatoCliente
-    if updates.motivoRecusa is not None:
-        db_event.motivoRecusa = updates.motivoRecusa    
+    # 🔧 Garante que 'status' esteja presente para a validação condicional
+    update_data = updates.dict(exclude_unset=True)
+    if "status" not in update_data:
+        update_data["status"] = db_event.status.value
+
+    # 🧠 Revalida usando o schema com status garantido
+    validated = EventUpdate(**update_data)
+
+    for key, value in validated.dict(exclude_unset=True).items():
+        setattr(db_event, key, value)
 
     db.commit()
     db.refresh(db_event)
@@ -91,4 +77,4 @@ def delete_event(event_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Evento não encontrado")
     db.delete(db_event)
     db.commit()
-    return  # 204 no content
+    return

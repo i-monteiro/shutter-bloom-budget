@@ -40,7 +40,7 @@ class EventUpdate(BaseModel):
     dataPrimeiroPagamento: Optional[date]
     
     contatoCliente: Optional[str]
-    motivoRecusa: Optional[str]
+    motivoRecusa: Optional[str] = None
 
 class EventOut(BaseModel):
     id: int

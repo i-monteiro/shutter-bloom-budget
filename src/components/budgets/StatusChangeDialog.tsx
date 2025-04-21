@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Budget, BudgetStatus } from "@/types/budget";
 import {
   Dialog,
@@ -14,8 +13,14 @@ import { useForm } from "react-hook-form";
 import { AmountField } from "./status-dialog/AmountField";
 import { InstallmentsSection } from "./status-dialog/InstallmentsSection";
 import { StatusFormData } from "./status-dialog/types";
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+} from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 interface StatusChangeDialogProps {
   budget: Budget;
@@ -30,94 +35,120 @@ export function StatusChangeDialog({
   open,
   onOpenChange,
   onStatusChange,
-  selectedStatus
+  selectedStatus,
 }: StatusChangeDialogProps) {
-  // Create a fresh state for the form values to avoid React Hook Form issues
-  const [formValues, setFormValues] = useState({
-    amount: budget.amount || 0, // Ensure amount has a fallback value
-    installments: budget.installments || false,
-    installmentsCount: budget.installmentsCount || 1,
-    firstPaymentDate: budget.firstPaymentDate,
-    rejectionReason: ''
-  });
-
-  // Create a new form instance
   const form = useForm<StatusFormData>({
-    defaultValues: formValues
+    defaultValues: {
+      amount: budget.amount || 0,
+      installments: budget.installments || false,
+      installmentsCount: budget.installmentsCount || 1,
+      firstPaymentDate: budget.firstPaymentDate
+        ? budget.firstPaymentDate.toISOString().split("T")[0]
+        : "",
+      rejectionReason: "",
+    },
+    mode: "onBlur",
   });
 
-  // Update form values when budget changes or dialog opens
   useEffect(() => {
     if (open) {
-      const newValues = {
-        amount: budget.amount || 0, // Ensure amount has a fallback value
+      const newValues: StatusFormData = {
+        amount: budget.amount || 0,
         installments: budget.installments || false,
         installmentsCount: budget.installmentsCount || 1,
-        firstPaymentDate: budget.firstPaymentDate,
-        rejectionReason: ''
+        firstPaymentDate: budget.firstPaymentDate
+          ? budget.firstPaymentDate.toISOString().split("T")[0]
+          : "",
+        rejectionReason: "",
       };
-      
-      // Update our local state
-      setFormValues(newValues);
-      
-      // Completely reset the form with new values
       form.reset(newValues);
     }
   }, [open, budget, form, selectedStatus]);
 
-  // Handle dialog open state changes
   const handleOpenChange = (newOpen: boolean) => {
-    // If dialog is closing, reset everything
     if (!newOpen) {
-      form.reset(); // Reset form state
+      form.reset();
     }
     onOpenChange(newOpen);
   };
 
   const onSubmit = (data: StatusFormData) => {
-    // Ensure amount is a number and at least 0
-    const processedData = {
-      ...data,
-      amount: data.amount !== undefined ? Number(data.amount) : 0,
-      installmentsCount: data.installmentsCount !== undefined ? Number(data.installmentsCount) : 1
+    const requiredFields: string[] = [];
+  
+    if ((selectedStatus === "sent" || selectedStatus === "accepted") && !data.amount) {
+      requiredFields.push("Valor do evento é obrigatório");
+    }
+  
+    if (selectedStatus === "accepted") {
+      if (data.installments === undefined) requiredFields.push("Informar se irá parcelar");
+      if (data.installmentsCount === undefined) requiredFields.push("Quantidade de parcelas é obrigatória");
+      if (!data.firstPaymentDate) requiredFields.push("Data do primeiro pagamento é obrigatória");
+    }
+  
+    if (selectedStatus === "rejected" && !data.rejectionReason?.trim()) {
+      requiredFields.push("Motivo da recusa é obrigatório");
+    }
+  
+    if (requiredFields.length > 0) {
+      requiredFields.forEach((field) => toast.error(field));
+      return;
+    }
+  
+    const processedData: any = {
+      amount: Number(data.amount),
+      installments: data.installments,
+      installmentsCount: Number(data.installmentsCount),
+      firstPaymentDate: data.firstPaymentDate || null,
     };
-    
+  
+    // Adiciona apenas os campos relevantes
+    if (selectedStatus === "rejected") {
+      processedData.rejectionReason = data.rejectionReason;
+    }
+  
     console.log("Form data being submitted:", processedData);
     onStatusChange(budget.id, selectedStatus, processedData);
     handleOpenChange(false);
   };
-
+  
+  
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {selectedStatus === 'sent' ? 'Enviar Orçamento' : 
-             selectedStatus === 'accepted' ? 'Aceitar Orçamento' :
-             selectedStatus === 'rejected' ? 'Recusar Orçamento' : 
-             'Definir como Pendente'}
+            {selectedStatus === "sent"
+              ? "Enviar Orçamento"
+              : selectedStatus === "accepted"
+              ? "Aceitar Orçamento"
+              : selectedStatus === "rejected"
+              ? "Recusar Orçamento"
+              : "Definir como Pendente"}
           </DialogTitle>
           <DialogDescription>
-            Preencha as informações necessárias para {
-              selectedStatus === 'sent' ? 'enviar o orçamento' : 
-              selectedStatus === 'accepted' ? 'aceitar o orçamento' :
-              selectedStatus === 'rejected' ? 'recusar o orçamento' : 
-              'definir como pendente'
-            }.
+            Preencha as informações necessárias para{" "}
+            {selectedStatus === "sent"
+              ? "enviar o orçamento"
+              : selectedStatus === "accepted"
+              ? "aceitar o orçamento"
+              : selectedStatus === "rejected"
+              ? "recusar o orçamento"
+              : "definir como pendente"}
+            .
           </DialogDescription>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {(selectedStatus === 'sent' || selectedStatus === 'accepted') && (
+            {(selectedStatus === "sent" || selectedStatus === "accepted") && (
               <AmountField form={form} />
             )}
 
-            {selectedStatus === 'accepted' && (
+            {selectedStatus === "accepted" && (
               <InstallmentsSection form={form} />
             )}
 
-            {selectedStatus === 'rejected' && (
+            {selectedStatus === "rejected" && (
               <FormField
                 control={form.control}
                 name="rejectionReason"
@@ -136,12 +167,14 @@ export function StatusChangeDialog({
             )}
 
             <div className="flex justify-end gap-3">
-              <Button variant="outline" type="button" onClick={() => handleOpenChange(false)}>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => handleOpenChange(false)}
+              >
                 Cancelar
               </Button>
-              <Button type="submit">
-                Confirmar
-              </Button>
+              <Button type="submit">Confirmar</Button>
             </div>
           </form>
         </Form>
