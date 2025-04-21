@@ -36,7 +36,7 @@ export function StatusChangeDialog({
   const [formValues, setFormValues] = useState({
     amount: budget.amount,
     installments: budget.installments || false,
-    installmentsCount: budget.installmentsCount,
+    installmentsCount: budget.installmentsCount || 1,
     firstPaymentDate: budget.firstPaymentDate,
     rejectionReason: ''
   });
@@ -52,7 +52,7 @@ export function StatusChangeDialog({
       const newValues = {
         amount: budget.amount,
         installments: budget.installments || false,
-        installmentsCount: budget.installmentsCount,
+        installmentsCount: budget.installmentsCount || 1,
         firstPaymentDate: budget.firstPaymentDate,
         rejectionReason: ''
       };
@@ -75,6 +75,7 @@ export function StatusChangeDialog({
   };
 
   const onSubmit = (data: StatusFormData) => {
+    console.log("Form data being submitted:", data);
     onStatusChange(budget.id, selectedStatus, data);
     handleOpenChange(false);
   };

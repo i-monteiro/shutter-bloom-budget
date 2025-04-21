@@ -25,15 +25,18 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
   }
   
   try {
+    const requestBody = fetchOptions.body ? 
+      typeof fetchOptions.body === 'string' ? JSON.parse(fetchOptions.body) : null : null;
+      
     console.log(`Enviando requisição para ${url}`, { 
       método: fetchOptions.method || 'GET',
-      corpo: fetchOptions.body ? JSON.parse(fetchOptions.body as string) : null
+      corpo: requestBody
     });
     
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
-      credentials: 'include'  // Adicionado para enviar cookies
+      credentials: 'include'
     });
     
     if (!response.ok) {
@@ -47,9 +50,15 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
           errorData
         });
         
-        // Formatar mensagem de erro para incluir detalhes do backend
+        // Format error message to include backend details
         if (errorData.detail) {
-          errorMessage = errorData.detail;
+          if (typeof errorData.detail === 'string') {
+            errorMessage = errorData.detail;
+          } else if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail.map(d => d.msg || JSON.stringify(d)).join(', ');
+          } else {
+            errorMessage = JSON.stringify(errorData.detail);
+          }
         }
       } catch (e) {
         console.error('Erro ao processar resposta de erro:', e);
