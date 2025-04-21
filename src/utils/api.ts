@@ -1,10 +1,6 @@
-
 import { getToken } from './auth';
 
-// Alterando a URL base para apontar para o ambiente onde está rodando
-const API_URL = import.meta.env.PROD 
-  ? '/api' 
-  : 'https://c4cc0ed0-8577-4945-af5a-7c77b4e312a9.lovableproject.com/api';
+const API_URL = 'http://localhost:8000/api';
 
 interface RequestOptions extends RequestInit {
   authenticated?: boolean;
@@ -46,26 +42,6 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
     return response.json();
   } catch (error) {
     console.error('API request error:', error);
-    
-    // Simulando o comportamento da API para desenvolvimento
-    if (endpoint === '/users/' && fetchOptions.method === 'POST') {
-      console.log('Registrando usuário em modo de desenvolvimento');
-      const userData = JSON.parse(fetchOptions.body as string);
-      // Simulando um atraso na resposta
-      await new Promise(resolve => setTimeout(resolve, 800));
-      return { id: 1, email: userData.email };
-    }
-    
-    if (endpoint === '/login' && fetchOptions.method === 'POST') {
-      console.log('Login em modo de desenvolvimento');
-      const userData = JSON.parse(fetchOptions.body as string);
-      // Simulando um atraso na resposta
-      await new Promise(resolve => setTimeout(resolve, 800));
-      return { 
-        access_token: 'fake_token_' + Math.random().toString(36).substring(2,15)
-      };
-    }
-    
     throw error;
   }
 };
