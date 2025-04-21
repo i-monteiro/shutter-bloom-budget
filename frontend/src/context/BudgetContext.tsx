@@ -1,15 +1,85 @@
+
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Budget, BudgetFormData, BudgetStatus } from "@/types/budget";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
+import { 
+  getEvents, 
+  createEvent, 
+  updateEvent, 
+  deleteEvent 
+} from "@/utils/api";
+import { useAuth } from "@/hooks/useAuth";
+
+// Map our internal status to API status
+const mapStatusToApi = (status: BudgetStatus) => {
+  const mapping = {
+    pending: "orcamento_recebido",
+    sent: "proposta_enviada",
+    accepted: "proposta_aceita",
+    rejected: "proposta_recusada"
+  };
+  return mapping[status];
+};
+
+// Map API status to our internal status
+const mapApiToStatus = (apiStatus: string): BudgetStatus => {
+  const mapping: Record<string, BudgetStatus> = {
+    orcamento_recebido: "pending",
+    proposta_enviada: "sent",
+    proposta_aceita: "accepted",
+    proposta_recusada: "rejected"
+  };
+  return mapping[apiStatus] || "pending";
+};
+
+// Convert Budget to API format
+const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus) => {
+  return {
+    nomeCliente: budget.clientName,
+    tipoEvento: budget.eventType,
+    dataOrcamento: budget.budgetDate.toISOString().split('T')[0],
+    dataEvento: budget.eventDate.toISOString().split('T')[0],
+    status: mapStatusToApi(status),
+    valorEvento: budget.amount,
+    iraParcelar: budget.installments,
+    quantParcelas: budget.installmentsCount,
+    dataPrimeiroPagamento: budget.firstPaymentDate ? 
+      budget.firstPaymentDate.toISOString().split('T')[0] : undefined,
+    contatoCliente: budget.phone,
+    motivoRecusa: status === "rejected" ? "" : undefined
+  };
+};
+
+// Convert API data to Budget format
+const apiToBudgetFormat = (apiData: any): Budget => {
+  return {
+    id: apiData.id.toString(),
+    clientName: apiData.nomeCliente,
+    phone: apiData.contatoCliente || "",
+    budgetDate: new Date(apiData.dataOrcamento),
+    eventDate: new Date(apiData.dataEvento),
+    eventType: apiData.tipoEvento,
+    amount: apiData.valorEvento,
+    installments: apiData.iraParcelar || false,
+    installmentsCount: apiData.quantParcelas || 1,
+    firstPaymentDate: apiData.dataPrimeiroPagamento ? new Date(apiData.dataPrimeiroPagamento) : undefined,
+    status: mapApiToStatus(apiData.status),
+    createdAt: new Date(apiData.created_at || new Date()),
+    updatedAt: new Date(apiData.updated_at || new Date())
+  };
+};
 
 interface BudgetContextType {
   budgets: Budget[];
-  addBudget: (budgetData: BudgetFormData) => void;
-  updateBudget: (id: string, budgetData: BudgetFormData) => void;
-  deleteBudget: (id: string) => void;
-  updateStatus: (id: string, newStatus: BudgetStatus, data?: any) => void;
+  isLoading: boolean;
+  error: string | null;
+  addBudget: (budgetData: BudgetFormData) => Promise<void>;
+  updateBudget: (id: string, budgetData: BudgetFormData) => Promise<void>;
+  deleteBudget: (id: string) => Promise<void>;
+  updateStatus: (id: string, newStatus: BudgetStatus, data?: any) => Promise<void>;
   getBudget: (id: string) => Budget | undefined;
+  refreshBudgets: () => Promise<void>;
 }
 
 const BudgetContext = createContext<BudgetContextType | undefined>(undefined);
@@ -23,97 +93,181 @@ export function useBudgets() {
 }
 
 export function BudgetProvider({ children }: { children: ReactNode }) {
-  const [budgets, setBudgets] = useState<Budget[]>(() => {
-    const savedBudgets = localStorage.getItem("budgets");
-    if (savedBudgets) {
-      try {
-        // Parse and convert string dates to Date objects
-        return JSON.parse(savedBudgets, (key, value) => {
-          const dateKeys = ["budgetDate", "eventDate", "firstPaymentDate", "createdAt", "updatedAt"];
-          if (dateKeys.includes(key) && value) {
-            return new Date(value);
-          }
-          return value;
-        });
-      } catch (error) {
-        console.error("Error parsing budgets from localStorage:", error);
-        return [];
-      }
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
+
+  const fetchBudgets = async () => {
+    if (!isAuthenticated) return;
+
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const data = await getEvents();
+      
+      // Convert API data to our Budget format
+      const formattedBudgets = data.map(apiToBudgetFormat);
+      
+      setBudgets(formattedBudgets);
+    } catch (error) {
+      console.error("Error fetching budgets:", error);
+      setError("Falha ao carregar orçamentos");
+      toast.error("Falha ao carregar orçamentos");
+    } finally {
+      setIsLoading(false);
     }
-    return [];
-  });
+  };
 
-  // Save to localStorage whenever budgets change
+  // Load budgets when authenticated
   useEffect(() => {
-    localStorage.setItem("budgets", JSON.stringify(budgets));
-  }, [budgets]);
+    if (isAuthenticated) {
+      fetchBudgets();
+    }
+  }, [isAuthenticated]);
 
-  const addBudget = (budgetData: BudgetFormData) => {
-    const now = new Date();
-    const newBudget: Budget = {
-      id: uuidv4(),
-      ...budgetData,
-      status: "pending",
-      createdAt: now,
-      updatedAt: now,
-    };
+  const addBudget = async (budgetData: BudgetFormData) => {
+    setIsLoading(true);
     
-    setBudgets((prevBudgets) => [...prevBudgets, newBudget]);
-    toast.success("Orçamento criado com sucesso!");
+    try {
+      const apiData = budgetToApiFormat(budgetData, "pending");
+      const response = await createEvent(apiData);
+      
+      // Convert API response back to Budget format
+      const newBudget = apiToBudgetFormat(response);
+      
+      setBudgets((prevBudgets) => [...prevBudgets, newBudget]);
+      toast.success("Orçamento criado com sucesso!");
+    } catch (error) {
+      console.error("Error adding budget:", error);
+      toast.error("Falha ao criar orçamento");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateBudget = (id: string, budgetData: BudgetFormData) => {
-    setBudgets((prevBudgets) => 
-      prevBudgets.map((budget) => 
-        budget.id === id 
-          ? { ...budget, ...budgetData, updatedAt: new Date() }
-          : budget
-      )
-    );
-    toast.success("Orçamento atualizado com sucesso!");
+  const updateBudget = async (id: string, budgetData: BudgetFormData) => {
+    setIsLoading(true);
+    
+    try {
+      const budget = budgets.find(b => b.id === id);
+      if (!budget) throw new Error("Orçamento não encontrado");
+      
+      const apiData = budgetToApiFormat(budgetData, budget.status);
+      const response = await updateEvent(parseInt(id), apiData);
+      
+      // Convert API response back to Budget format
+      const updatedBudget = apiToBudgetFormat(response);
+      
+      setBudgets((prevBudgets) => 
+        prevBudgets.map((budget) => 
+          budget.id === id ? updatedBudget : budget
+        )
+      );
+      
+      toast.success("Orçamento atualizado com sucesso!");
+    } catch (error) {
+      console.error("Error updating budget:", error);
+      toast.error("Falha ao atualizar orçamento");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const deleteBudget = (id: string) => {
-    setBudgets((prevBudgets) => prevBudgets.filter((budget) => budget.id !== id));
-    toast.success("Orçamento excluído com sucesso!");
+  const deleteBudget = async (id: string) => {
+    setIsLoading(true);
+    
+    try {
+      await deleteEvent(parseInt(id));
+      
+      setBudgets((prevBudgets) => prevBudgets.filter((budget) => budget.id !== id));
+      toast.success("Orçamento excluído com sucesso!");
+    } catch (error) {
+      console.error("Error deleting budget:", error);
+      toast.error("Falha ao excluir orçamento");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const updateStatus = (id: string, newStatus: BudgetStatus, data?: any) => {
-    setBudgets((prevBudgets) => 
-      prevBudgets.map((budget) => 
-        budget.id === id 
-          ? {
-              ...budget,
-              ...data,
-              status: newStatus,
-              updatedAt: new Date()
-            }
-          : budget
-      )
-    );
+  const updateStatus = async (id: string, newStatus: BudgetStatus, data?: any) => {
+    setIsLoading(true);
     
-    const statusMessages = {
-      pending: "Orçamento definido como pendente",
-      sent: "Proposta marcada como enviada",
-      accepted: "Proposta aceita pelo cliente!",
-      rejected: "Proposta recusada pelo cliente"
-    };
-    
-    toast.success(statusMessages[newStatus]);
+    try {
+      const budget = budgets.find(b => b.id === id);
+      if (!budget) throw new Error("Orçamento não encontrado");
+      
+      // Merge existing budget data with any new data
+      const updatedBudgetData: BudgetFormData = {
+        clientName: budget.clientName,
+        phone: budget.phone,
+        budgetDate: budget.budgetDate,
+        eventDate: budget.eventDate,
+        eventType: budget.eventType,
+        amount: data?.amount || budget.amount,
+        installments: data?.installments ?? budget.installments,
+        installmentsCount: data?.installmentsCount ?? budget.installmentsCount,
+        firstPaymentDate: data?.firstPaymentDate || budget.firstPaymentDate
+      };
+      
+      const apiData = budgetToApiFormat(updatedBudgetData, newStatus);
+      
+      // Add rejection reason if the status is rejected
+      if (newStatus === "rejected" && data?.rejectionReason) {
+        apiData.motivoRecusa = data.rejectionReason;
+      }
+      
+      const response = await updateEvent(parseInt(id), apiData);
+      
+      // Convert API response back to Budget format
+      const updatedBudget = apiToBudgetFormat(response);
+      
+      setBudgets((prevBudgets) => 
+        prevBudgets.map((budget) => 
+          budget.id === id ? updatedBudget : budget
+        )
+      );
+      
+      const statusMessages = {
+        pending: "Orçamento definido como pendente",
+        sent: "Proposta marcada como enviada",
+        accepted: "Proposta aceita pelo cliente!",
+        rejected: "Proposta recusada pelo cliente"
+      };
+      
+      toast.success(statusMessages[newStatus]);
+    } catch (error) {
+      console.error("Error updating budget status:", error);
+      toast.error("Falha ao atualizar status do orçamento");
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getBudget = (id: string) => {
     return budgets.find((budget) => budget.id === id);
   };
 
+  const refreshBudgets = async () => {
+    await fetchBudgets();
+  };
+
   return (
     <BudgetContext.Provider value={{ 
       budgets, 
+      isLoading,
+      error,
       addBudget, 
       updateBudget, 
       deleteBudget,
       updateStatus,
-      getBudget 
+      getBudget,
+      refreshBudgets
     }}>
       {children}
     </BudgetContext.Provider>

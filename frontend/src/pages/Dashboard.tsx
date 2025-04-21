@@ -1,13 +1,15 @@
 
 import { useMemo } from "react";
 import { useBudgets } from "@/context/BudgetContext";
+import { useAuth } from "@/hooks/useAuth";
 import { StatCard } from "@/components/ui/stat-card";
 import { MonthlyEvents } from "@/components/dashboard/MonthlyEvents";
 import { MonthlyRevenue } from "@/components/dashboard/MonthlyRevenue";
-import { Receipt, CalendarDays, Check, X } from "lucide-react";
+import { Receipt, CalendarDays, Check, X, Camera } from "lucide-react";
 
 const Dashboard = () => {
-  const { budgets } = useBudgets();
+  const { budgets, isLoading } = useBudgets();
+  const { userName } = useAuth();
 
   // Calculate dashboard stats
   const stats = useMemo(() => {
@@ -33,12 +35,20 @@ const Dashboard = () => {
     };
   }, [budgets]);
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Olá, {userName || "Fotógrafo"}</h1>
         <p className="text-muted-foreground mt-1">
-          Visão geral dos seus orçamentos e faturamento.
+          Bem-vindo ao seu painel de controle de orçamentos fotográficos.
         </p>
       </div>
 
@@ -46,7 +56,7 @@ const Dashboard = () => {
         <StatCard 
           title="Total de Orçamentos" 
           value={stats.totalBudgets} 
-          icon={<Receipt className="h-5 w-5" />}
+          icon={<Camera className="h-5 w-5" />}
         />
         <StatCard 
           title="Propostas Enviadas" 
@@ -54,7 +64,7 @@ const Dashboard = () => {
           icon={<CalendarDays className="h-5 w-5" />}
         />
         <StatCard 
-          title="Propostas Aceitas" 
+          title="Sessões Confirmadas" 
           value={stats.acceptedProposals}
           icon={<Check className="h-5 w-5" />}
         />
