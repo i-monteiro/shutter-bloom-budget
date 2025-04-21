@@ -31,7 +31,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check authentication status on mount
     const checkAuthentication = () => {
       const authenticated = checkAuth();
       setIsAuthenticated(authenticated);
@@ -53,21 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiLogin(email, password);
       setToken(response.access_token);
       setIsAuthenticated(true);
-      
-      // Em desenvolvimento, vamos definir um nome de usuário padrão
-      if (!getUserName()) {
-        // Criando um token JWT falso que inclui o nome do usuário
-        const fakeToken = btoa(JSON.stringify({
-          sub: email,
-          id: 1,
-          name: email.split('@')[0],
-          exp: Math.floor(Date.now() / 1000) + 86400
-        }));
-        localStorage.setItem('token', fakeToken);
-      }
-      
-      setUserName(getUserName() || email.split('@')[0]);
-      setUserId(getUserId() || 1);
+      setUserName(getUserName());
+      setUserId(getUserId());
       
       toast.success('Login realizado com sucesso!');
       navigate('/dashboard');
