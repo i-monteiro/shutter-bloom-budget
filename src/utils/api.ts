@@ -27,7 +27,8 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
   try {
     const response = await fetch(url, {
       ...fetchOptions,
-      headers
+      headers,
+      credentials: 'include'  // Adicionado para enviar cookies
     });
     
     if (!response.ok) {
