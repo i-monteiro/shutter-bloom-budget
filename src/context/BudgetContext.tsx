@@ -1,6 +1,6 @@
+
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Budget, BudgetFormData, BudgetStatus } from "@/types/budget";
-import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { 
   getEvents, 
@@ -43,19 +43,20 @@ const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus, rejecti
     status: mapStatusToApi(status)
   };
   
-  // Add optional fields, including those with value 0 or false
-  if (budget.amount !== undefined) {
-    apiData.valorEvento = budget.amount;
+  // Add optional fields based on status
+  if (status === 'sent' || status === 'accepted') {
+    // For sent and accepted, valorEvento is required
+    apiData.valorEvento = budget.amount !== undefined ? Number(budget.amount) : 0;
   }
   
-  apiData.iraParcelar = budget.installments || false;
-  
-  if (budget.installmentsCount !== undefined) {
-    apiData.quantParcelas = budget.installmentsCount;
-  }
-  
-  if (budget.firstPaymentDate) {
-    apiData.dataPrimeiroPagamento = budget.firstPaymentDate.toISOString().split('T')[0];
+  if (status === 'accepted') {
+    // For accepted status, we need payment details
+    apiData.iraParcelar = budget.installments || false;
+    apiData.quantParcelas = budget.installmentsCount !== undefined ? Number(budget.installmentsCount) : 1;
+    
+    if (budget.firstPaymentDate) {
+      apiData.dataPrimeiroPagamento = budget.firstPaymentDate.toISOString().split('T')[0];
+    }
   }
   
   if (budget.phone) {
@@ -220,21 +221,36 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
       const budget = budgets.find(b => b.id === id);
       if (!budget) throw new Error("Orçamento não encontrado");
       
-      // Merge existing budget data with any new data
+      // Create a base budget data object from the existing budget
       const updatedBudgetData: BudgetFormData = {
         clientName: budget.clientName,
         phone: budget.phone,
         budgetDate: budget.budgetDate,
         eventDate: budget.eventDate,
         eventType: budget.eventType,
-        amount: data?.amount !== undefined ? Number(data.amount) : budget.amount,
-        installments: data?.installments !== undefined ? Boolean(data.installments) : budget.installments,
-        installmentsCount: data?.installmentsCount !== undefined ? Number(data.installmentsCount) : budget.installmentsCount,
-        firstPaymentDate: data?.firstPaymentDate || budget.firstPaymentDate
+        amount: budget.amount,
+        installments: budget.installments,
+        installmentsCount: budget.installmentsCount,
+        firstPaymentDate: budget.firstPaymentDate
       };
       
-      // Include the rejection reason, if applicable
+      // Update with new form data if provided
+      if (data) {
+        if (newStatus === 'sent' || newStatus === 'accepted') {
+          updatedBudgetData.amount = data.amount !== undefined ? Number(data.amount) : budget.amount;
+        }
+        
+        if (newStatus === 'accepted') {
+          updatedBudgetData.installments = data.installments !== undefined ? Boolean(data.installments) : budget.installments;
+          updatedBudgetData.installmentsCount = data.installmentsCount !== undefined ? Number(data.installmentsCount) : budget.installmentsCount;
+          updatedBudgetData.firstPaymentDate = data.firstPaymentDate || budget.firstPaymentDate;
+        }
+      }
+      
+      // Include the rejection reason for rejected status
       const rejectionReason = newStatus === "rejected" ? data?.rejectionReason || "" : undefined;
+      
+      // Convert to API format
       const apiData = budgetToApiFormat(updatedBudgetData, newStatus, rejectionReason);
       
       console.log('Enviando para API:', apiData);

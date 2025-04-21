@@ -25,12 +25,23 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
   }
   
   try {
-    const requestBody = fetchOptions.body ? 
-      typeof fetchOptions.body === 'string' ? JSON.parse(fetchOptions.body) : fetchOptions.body : null;
-      
+    // Properly format the log for the request body
+    let requestBodyForLog = null;
+    if (fetchOptions.body) {
+      if (typeof fetchOptions.body === 'string') {
+        try {
+          requestBodyForLog = JSON.parse(fetchOptions.body);
+        } catch (e) {
+          requestBodyForLog = fetchOptions.body;
+        }
+      } else {
+        requestBodyForLog = fetchOptions.body;
+      }
+    }
+    
     console.log(`Enviando requisição para ${url}`, { 
       método: fetchOptions.method || 'GET',
-      corpo: requestBody
+      corpo: requestBodyForLog
     });
     
     const response = await fetch(url, {
