@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { BudgetFormData } from "@/types/budget";
+import { BudgetFormData, EventType } from "@/types/budget";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
@@ -34,7 +35,7 @@ const createBudgetFormSchema = (showAmount: boolean, showInstallments: boolean) 
     phone: z.string().min(8, "Telefone inválido"),
     budgetDate: z.date(),
     eventDate: z.date(),
-    eventType: z.enum(['wedding', 'birthday', 'corporate', 'other'] as const),
+    eventType: z.enum(['casamento', 'aniversario', 'corporativo', 'ensaio', 'formatura', 'outro'] as const),
   };
 
   const amountSchema = showAmount ? {
@@ -78,7 +79,7 @@ export function BudgetForm({
       phone: initialData?.phone || "",
       budgetDate: initialData?.budgetDate || new Date(),
       eventDate: initialData?.eventDate || new Date(),
-      eventType: initialData?.eventType || "wedding",
+      eventType: initialData?.eventType || "casamento",
       amount: initialData?.amount || 0,
       installments: initialData?.installments || false,
       installmentsCount: initialData?.installmentsCount || 1,
@@ -134,10 +135,12 @@ export function BudgetForm({
                   {...field}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 >
-                  <option value="wedding">Casamento</option>
-                  <option value="birthday">Aniversário</option>
-                  <option value="corporate">Corporativo</option>
-                  <option value="other">Outro</option>
+                  <option value="casamento">Casamento</option>
+                  <option value="aniversario">Aniversário</option>
+                  <option value="corporativo">Corporativo</option>
+                  <option value="ensaio">Ensaio</option>
+                  <option value="formatura">Formatura</option>
+                  <option value="outro">Outro</option>
                 </select>
               </FormControl>
               <FormMessage />

@@ -11,7 +11,11 @@ import {
   X 
 } from "lucide-react";
 
-const Sidebar = () => {
+interface SidebarProps {
+  userName: string;
+}
+
+const Sidebar = ({ userName }: SidebarProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
@@ -71,8 +75,9 @@ const Sidebar = () => {
             ))}
           </nav>
 
-          {/* Footer */}
+          {/* User info */}
           <div className="p-4 border-t">
+            <p className="text-sm font-medium">{userName}</p>
             <p className="text-sm text-gray-500 text-center">
               © 2025 ShutterBloom
             </p>
