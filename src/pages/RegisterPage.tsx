@@ -104,4 +104,5 @@ export default function RegisterPage() {
         </form>
       </div>
     </div>
-  </form>
+  );
+}
