@@ -14,6 +14,8 @@ import { useForm } from "react-hook-form";
 import { AmountField } from "./status-dialog/AmountField";
 import { InstallmentsSection } from "./status-dialog/InstallmentsSection";
 import { StatusFormData } from "./status-dialog/types";
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 
 interface StatusChangeDialogProps {
   budget: Budget;
@@ -36,10 +38,11 @@ export function StatusChangeDialog({
     installments: budget.installments || false,
     installmentsCount: budget.installmentsCount,
     firstPaymentDate: budget.firstPaymentDate,
+    rejectionReason: ''
   });
 
   // Create a new form instance
-  const form = useForm<StatusFormData>({
+  const form = useForm<StatusFormData & { rejectionReason?: string }>({
     defaultValues: formValues
   });
 
@@ -51,6 +54,7 @@ export function StatusChangeDialog({
         installments: budget.installments || false,
         installmentsCount: budget.installmentsCount,
         firstPaymentDate: budget.firstPaymentDate,
+        rejectionReason: ''
       };
       
       // Update our local state
@@ -70,7 +74,7 @@ export function StatusChangeDialog({
     onOpenChange(newOpen);
   };
 
-  const onSubmit = (data: StatusFormData) => {
+  const onSubmit = (data: StatusFormData & { rejectionReason?: string }) => {
     onStatusChange(budget.id, selectedStatus, data);
     handleOpenChange(false);
   };
@@ -103,6 +107,24 @@ export function StatusChangeDialog({
 
             {selectedStatus === 'accepted' && (
               <InstallmentsSection form={form} />
+            )}
+
+            {selectedStatus === 'rejected' && (
+              <FormField
+                control={form.control}
+                name="rejectionReason"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Motivo da Recusa</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Informe o motivo da recusa do orçamento"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             )}
 
             <div className="flex justify-end gap-3">

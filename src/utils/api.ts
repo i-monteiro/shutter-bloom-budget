@@ -1,4 +1,3 @@
-
 import { getToken } from './auth';
 
 const API_URL = 'http://localhost:8000/api';
@@ -25,6 +24,11 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
   }
   
   try {
+    console.log(`Enviando requisição para ${url}`, { 
+      método: fetchOptions.method || 'GET',
+      corpo: fetchOptions.body ? JSON.parse(fetchOptions.body as string) : null
+    });
+    
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
@@ -32,8 +36,13 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
     });
     
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || `API request failed with status ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Erro na resposta da API:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData
+      });
+      throw new Error(errorData.detail || `API request failed with status ${response.status}`);
     }
     
     // For 204 No Content responses
@@ -73,11 +82,13 @@ export const createEvent = (eventData: any) =>
     body: JSON.stringify(eventData)
   });
 
-export const updateEvent = (id: number, eventData: any) => 
-  fetchApi(`/events/${id}`, {
+export const updateEvent = (id: number, eventData: any) => {
+  console.log(`Atualizando evento ${id} com dados:`, eventData);
+  return fetchApi(`/events/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(eventData)
   });
+};
 
 export const deleteEvent = (id: number) => 
   fetchApi(`/events/${id}`, {

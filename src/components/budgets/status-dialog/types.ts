@@ -4,4 +4,5 @@ export interface StatusFormData {
   installments: boolean;
   installmentsCount: number | undefined;
   firstPaymentDate: Date | undefined;
+  rejectionReason?: string;
 }

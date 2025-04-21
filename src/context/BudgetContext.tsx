@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Budget, BudgetFormData, BudgetStatus } from "@/types/budget";
 import { v4 as uuidv4 } from "uuid";
@@ -35,20 +34,42 @@ const mapApiToStatus = (apiStatus: string): BudgetStatus => {
 
 // Convert Budget to API format
 const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus) => {
-  return {
+  // Filtra campos indefinidos para evitar enviar valores null ou undefined para o backend
+  const apiData: Record<string, any> = {
     nomeCliente: budget.clientName,
     tipoEvento: budget.eventType,
     dataOrcamento: budget.budgetDate.toISOString().split('T')[0],
     dataEvento: budget.eventDate.toISOString().split('T')[0],
-    status: mapStatusToApi(status),
-    valorEvento: budget.amount,
-    iraParcelar: budget.installments,
-    quantParcelas: budget.installmentsCount,
-    dataPrimeiroPagamento: budget.firstPaymentDate ? 
-      budget.firstPaymentDate.toISOString().split('T')[0] : undefined,
-    contatoCliente: budget.phone,
-    motivoRecusa: status === "rejected" ? "" : undefined
+    status: mapStatusToApi(status)
   };
+  
+  // Adiciona campos opcionais apenas se tiverem valor
+  if (budget.amount !== undefined) {
+    apiData.valorEvento = budget.amount;
+  }
+  
+  if (budget.installments !== undefined) {
+    apiData.iraParcelar = budget.installments;
+  }
+  
+  if (budget.installmentsCount !== undefined) {
+    apiData.quantParcelas = budget.installmentsCount;
+  }
+  
+  if (budget.firstPaymentDate) {
+    apiData.dataPrimeiroPagamento = budget.firstPaymentDate.toISOString().split('T')[0];
+  }
+  
+  if (budget.phone) {
+    apiData.contatoCliente = budget.phone;
+  }
+  
+  // Adiciona motivo de recusa apenas para status rejected
+  if (status === "rejected") {
+    apiData.motivoRecusa = "";
+  }
+  
+  return apiData;
 };
 
 // Convert API data to Budget format
@@ -208,9 +229,9 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         budgetDate: budget.budgetDate,
         eventDate: budget.eventDate,
         eventType: budget.eventType,
-        amount: data?.amount || budget.amount,
-        installments: data?.installments ?? budget.installments,
-        installmentsCount: data?.installmentsCount ?? budget.installmentsCount,
+        amount: data?.amount !== undefined ? data.amount : budget.amount,
+        installments: data?.installments !== undefined ? data.installments : budget.installments,
+        installmentsCount: data?.installmentsCount !== undefined ? data.installmentsCount : budget.installmentsCount,
         firstPaymentDate: data?.firstPaymentDate || budget.firstPaymentDate
       };
       
@@ -220,6 +241,8 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
       if (newStatus === "rejected" && data?.rejectionReason) {
         apiData.motivoRecusa = data.rejectionReason;
       }
+      
+      console.log('Enviando para API:', apiData);
       
       const response = await updateEvent(parseInt(id), apiData);
       
