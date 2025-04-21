@@ -1,6 +1,4 @@
 
-'use client';
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,8 +19,9 @@ export default function RegisterPage() {
 
     try {
       await register(name, email, password);
-    } catch (error) {
-      setError('Erro ao cadastrar usuário');
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Erro ao cadastrar usuário. Verifique suas informações.');
     }
   };
 
@@ -33,7 +32,7 @@ export default function RegisterPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
             <Camera className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Photo Manager</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Fotessence</h1>
           <p className="text-gray-600 mt-2">Gerenciamento de orçamentos fotográficos</p>
         </div>
 
@@ -105,5 +104,4 @@ export default function RegisterPage() {
         </form>
       </div>
     </div>
-  );
-}
+  </form>

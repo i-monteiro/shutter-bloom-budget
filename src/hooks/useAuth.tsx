@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       navigate('/login');
     } catch (error) {
       console.error('Registration error:', error);
-      toast.error('Falha no cadastro. Tente novamente.');
+      toast.error('Falha no cadastro. Verifique se o email já está em uso.');
       throw error;
     } finally {
       setIsLoading(false);
