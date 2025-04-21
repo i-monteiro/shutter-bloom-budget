@@ -33,8 +33,8 @@ const mapApiToStatus = (apiStatus: string): BudgetStatus => {
 };
 
 // Convert Budget to API format
-const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus) => {
-  // Filtra campos indefinidos para evitar enviar valores null ou undefined para o backend
+const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus, rejectionReason?: string) => {
+  // Cria um objeto base com todos os campos requeridos pelo backend
   const apiData: Record<string, any> = {
     nomeCliente: budget.clientName,
     tipoEvento: budget.eventType,
@@ -43,14 +43,12 @@ const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus) => {
     status: mapStatusToApi(status)
   };
   
-  // Adiciona campos opcionais apenas se tiverem valor
+  // Adiciona campos opcionais, incluindo aqueles com valor 0 ou false
   if (budget.amount !== undefined) {
     apiData.valorEvento = budget.amount;
   }
   
-  if (budget.installments !== undefined) {
-    apiData.iraParcelar = budget.installments;
-  }
+  apiData.iraParcelar = budget.installments || false;
   
   if (budget.installmentsCount !== undefined) {
     apiData.quantParcelas = budget.installmentsCount;
@@ -64,9 +62,9 @@ const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus) => {
     apiData.contatoCliente = budget.phone;
   }
   
-  // Adiciona motivo de recusa apenas para status rejected
+  // Adiciona motivo de recusa se o status for rejected
   if (status === "rejected") {
-    apiData.motivoRecusa = "";
+    apiData.motivoRecusa = rejectionReason || "";
   }
   
   return apiData;
@@ -235,12 +233,9 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         firstPaymentDate: data?.firstPaymentDate || budget.firstPaymentDate
       };
       
-      const apiData = budgetToApiFormat(updatedBudgetData, newStatus);
-      
-      // Add rejection reason if the status is rejected
-      if (newStatus === "rejected" && data?.rejectionReason) {
-        apiData.motivoRecusa = data.rejectionReason;
-      }
+      // Inclui o motivo da recusa, se aplicável
+      const rejectionReason = newStatus === "rejected" ? data?.rejectionReason || "" : undefined;
+      const apiData = budgetToApiFormat(updatedBudgetData, newStatus, rejectionReason);
       
       console.log('Enviando para API:', apiData);
       

@@ -1,3 +1,4 @@
+
 import { getToken } from './auth';
 
 const API_URL = 'http://localhost:8000/api';
@@ -36,13 +37,25 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
     });
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Erro na resposta da API:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorData
-      });
-      throw new Error(errorData.detail || `API request failed with status ${response.status}`);
+      let errorMessage = `API request failed with status ${response.status}`;
+      
+      try {
+        const errorData = await response.json();
+        console.error('Erro na resposta da API:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
+        
+        // Formatar mensagem de erro para incluir detalhes do backend
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        }
+      } catch (e) {
+        console.error('Erro ao processar resposta de erro:', e);
+      }
+      
+      throw new Error(errorMessage);
     }
     
     // For 204 No Content responses

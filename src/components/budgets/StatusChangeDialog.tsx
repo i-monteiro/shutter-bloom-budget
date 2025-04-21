@@ -42,7 +42,7 @@ export function StatusChangeDialog({
   });
 
   // Create a new form instance
-  const form = useForm<StatusFormData & { rejectionReason?: string }>({
+  const form = useForm<StatusFormData>({
     defaultValues: formValues
   });
 
@@ -74,7 +74,7 @@ export function StatusChangeDialog({
     onOpenChange(newOpen);
   };
 
-  const onSubmit = (data: StatusFormData & { rejectionReason?: string }) => {
+  const onSubmit = (data: StatusFormData) => {
     onStatusChange(budget.id, selectedStatus, data);
     handleOpenChange(false);
   };
