@@ -34,7 +34,7 @@ const mapApiToStatus = (apiStatus: string): BudgetStatus => {
 
 // Convert Budget to API format
 const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus, rejectionReason?: string) => {
-  // Cria um objeto base com todos os campos requeridos pelo backend
+  // Create base object with all required fields
   const apiData: Record<string, any> = {
     nomeCliente: budget.clientName,
     tipoEvento: budget.eventType,
@@ -43,7 +43,7 @@ const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus, rejecti
     status: mapStatusToApi(status)
   };
   
-  // Adiciona campos opcionais, incluindo aqueles com valor 0 ou false
+  // Add optional fields, including those with value 0 or false
   if (budget.amount !== undefined) {
     apiData.valorEvento = budget.amount;
   }
@@ -62,9 +62,9 @@ const budgetToApiFormat = (budget: BudgetFormData, status: BudgetStatus, rejecti
     apiData.contatoCliente = budget.phone;
   }
   
-  // Adiciona motivo de recusa se o status for rejected
-  if (status === "rejected") {
-    apiData.motivoRecusa = rejectionReason || "";
+  // Add rejection reason if status is rejected
+  if (status === "rejected" && rejectionReason) {
+    apiData.motivoRecusa = rejectionReason;
   }
   
   return apiData;
@@ -227,13 +227,13 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
         budgetDate: budget.budgetDate,
         eventDate: budget.eventDate,
         eventType: budget.eventType,
-        amount: data?.amount !== undefined ? data.amount : budget.amount,
-        installments: data?.installments !== undefined ? data.installments : budget.installments,
-        installmentsCount: data?.installmentsCount !== undefined ? data.installmentsCount : budget.installmentsCount,
+        amount: data?.amount !== undefined ? Number(data.amount) : budget.amount,
+        installments: data?.installments !== undefined ? Boolean(data.installments) : budget.installments,
+        installmentsCount: data?.installmentsCount !== undefined ? Number(data.installmentsCount) : budget.installmentsCount,
         firstPaymentDate: data?.firstPaymentDate || budget.firstPaymentDate
       };
       
-      // Inclui o motivo da recusa, se aplicável
+      // Include the rejection reason, if applicable
       const rejectionReason = newStatus === "rejected" ? data?.rejectionReason || "" : undefined;
       const apiData = budgetToApiFormat(updatedBudgetData, newStatus, rejectionReason);
       

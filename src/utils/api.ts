@@ -26,7 +26,7 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
   
   try {
     const requestBody = fetchOptions.body ? 
-      typeof fetchOptions.body === 'string' ? JSON.parse(fetchOptions.body) : null : null;
+      typeof fetchOptions.body === 'string' ? JSON.parse(fetchOptions.body) : fetchOptions.body : null;
       
     console.log(`Enviando requisição para ${url}`, { 
       método: fetchOptions.method || 'GET',
@@ -55,7 +55,12 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
           if (typeof errorData.detail === 'string') {
             errorMessage = errorData.detail;
           } else if (Array.isArray(errorData.detail)) {
-            errorMessage = errorData.detail.map(d => d.msg || JSON.stringify(d)).join(', ');
+            errorMessage = errorData.detail.map(d => {
+              if (d.msg && d.loc) {
+                return `${d.loc[1]}: ${d.msg}`;
+              }
+              return d.msg || JSON.stringify(d);
+            }).join(', ');
           } else {
             errorMessage = JSON.stringify(errorData.detail);
           }

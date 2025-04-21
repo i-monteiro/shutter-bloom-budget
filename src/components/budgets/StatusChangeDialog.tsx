@@ -34,7 +34,7 @@ export function StatusChangeDialog({
 }: StatusChangeDialogProps) {
   // Create a fresh state for the form values to avoid React Hook Form issues
   const [formValues, setFormValues] = useState({
-    amount: budget.amount,
+    amount: budget.amount || 0, // Ensure amount has a fallback value
     installments: budget.installments || false,
     installmentsCount: budget.installmentsCount || 1,
     firstPaymentDate: budget.firstPaymentDate,
@@ -50,7 +50,7 @@ export function StatusChangeDialog({
   useEffect(() => {
     if (open) {
       const newValues = {
-        amount: budget.amount,
+        amount: budget.amount || 0, // Ensure amount has a fallback value
         installments: budget.installments || false,
         installmentsCount: budget.installmentsCount || 1,
         firstPaymentDate: budget.firstPaymentDate,
@@ -75,8 +75,15 @@ export function StatusChangeDialog({
   };
 
   const onSubmit = (data: StatusFormData) => {
-    console.log("Form data being submitted:", data);
-    onStatusChange(budget.id, selectedStatus, data);
+    // Ensure amount is a number and at least 0
+    const processedData = {
+      ...data,
+      amount: data.amount !== undefined ? Number(data.amount) : 0,
+      installmentsCount: data.installmentsCount !== undefined ? Number(data.installmentsCount) : 1
+    };
+    
+    console.log("Form data being submitted:", processedData);
+    onStatusChange(budget.id, selectedStatus, processedData);
     handleOpenChange(false);
   };
 
