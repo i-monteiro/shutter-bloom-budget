@@ -1,7 +1,7 @@
 
 export type BudgetStatus = 'pending' | 'sent' | 'accepted' | 'rejected';
 
-export type EventType = 'wedding' | 'birthday' | 'corporate' | 'other';
+export type EventType = 'casamento' | 'aniversario' | 'corporativo' | 'ensaio' | 'formatura' | 'outro';
 
 export interface Budget {
   id: string;

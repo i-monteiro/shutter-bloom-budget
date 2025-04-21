@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Camera } from 'lucide-react';
 
-export default function LoginPage() {
-  const { login, isLoading } = useAuth();
+export default function RegisterPage() {
+  const { register, isLoading } = useAuth();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,9 +20,9 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login(email, password);
+      await register(name, email, password);
     } catch (error) {
-      setError('Credenciais inválidas');
+      setError('Erro ao cadastrar usuário');
     }
   };
 
@@ -37,11 +38,25 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full">
-          <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center">Cadastro</h2>
           
           {error && <p className="text-destructive mb-4 text-center">{error}</p>}
 
           <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                Nome completo
+              </label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Seu nome completo"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email
@@ -75,15 +90,15 @@ export default function LoginPage() {
               className="w-full bg-primary hover:bg-primary/90"
               disabled={isLoading}
             >
-              {isLoading ? 'Entrando...' : 'Entrar'}
+              {isLoading ? 'Cadastrando...' : 'Criar conta'}
             </Button>
           </div>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Não tem uma conta?{' '}
-              <Link to="/register" className="text-primary font-medium hover:underline">
-                Cadastre-se
+              Já tem uma conta?{' '}
+              <Link to="/login" className="text-primary font-medium hover:underline">
+                Faça login
               </Link>
             </p>
           </div>
