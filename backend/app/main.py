@@ -37,10 +37,17 @@ app.add_middleware(SecurityHeadersMiddleware)
 # Cria tabelas no banco
 Base.metadata.create_all(bind=engine)
 
-# Configura CORS
+# Configura CORS - atualizando aqui para incluir todas as portas necessárias
+origins = [
+    "http://localhost:3000",  # Porta padrão React
+    "http://localhost:8080",  # Porta do Vite/sua aplicação
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:3000"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8080"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
