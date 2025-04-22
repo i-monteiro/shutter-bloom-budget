@@ -1,23 +1,38 @@
 
-import { getToken } from './auth';
+import { getToken, isAuthenticated, refreshTokenAsync } from './auth';
 
 const API_URL = 'http://localhost:8000/api';
 
 interface RequestOptions extends RequestInit {
   authenticated?: boolean;
+  retry?: boolean;
 }
 
+/**
+ * Função de utilidade para fazer requisições à API com tratamento de erros
+ * e autenticação automática
+ */
 export const fetchApi = async (endpoint: string, options: RequestOptions = {}) => {
-  const { authenticated = true, ...fetchOptions } = options;
+  const { authenticated = true, retry = true, ...fetchOptions } = options;
   const url = `${API_URL}${endpoint}`;
   
   const headers = new Headers(fetchOptions.headers);
   
+  // Configurar Content-Type automaticamente
   if (!headers.has('Content-Type') && !(fetchOptions.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
   
+  // Adicionar X-Requested-With para prevenir CSRF
+  headers.set('X-Requested-With', 'XMLHttpRequest');
+  
+  // Adicionar token de autenticação se necessário
   if (authenticated) {
+    // Verificar se o usuário está autenticado
+    if (!isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
+    }
+    
     const token = getToken();
     if (token) {
       headers.set('Authorization', `Bearer ${token}`);
@@ -25,17 +40,24 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
   }
   
   try {
-    // Properly format the log for the request body
+    // Sanitizar logs para não exibir dados sensíveis
     let requestBodyForLog = null;
     if (fetchOptions.body) {
       if (typeof fetchOptions.body === 'string') {
         try {
-          requestBodyForLog = JSON.parse(fetchOptions.body);
+          const parsedBody = JSON.parse(fetchOptions.body);
+          // Remover campos sensíveis
+          const sanitizedBody = { ...parsedBody };
+          if (sanitizedBody.password) sanitizedBody.password = '***';
+          if (sanitizedBody.token) sanitizedBody.token = '***';
+          requestBodyForLog = sanitizedBody;
         } catch (e) {
-          requestBodyForLog = fetchOptions.body;
+          requestBodyForLog = '[Corpo não JSON]';
         }
+      } else if (fetchOptions.body instanceof FormData) {
+        requestBodyForLog = '[FormData]';
       } else {
-        requestBodyForLog = fetchOptions.body;
+        requestBodyForLog = '[Objeto não serializado]';
       }
     }
     
@@ -47,8 +69,23 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
-      credentials: 'include'
+      credentials: 'include'  // Importante para cookies de refresh token
     });
+    
+    // Se o token expirou (401) e não estamos em uma requisição de retry
+    if (response.status === 401 && retry && authenticated) {
+      try {
+        // Tentar obter um novo token
+        const refreshed = await refreshTokenAsync();
+        if (refreshed) {
+          // Tentar novamente com o novo token
+          return fetchApi(endpoint, { ...options, retry: false });
+        }
+      } catch (refreshError) {
+        console.error('Erro ao renovar token:', refreshError);
+        throw new Error('Sessão expirada. Faça login novamente.');
+      }
+    }
     
     if (!response.ok) {
       let errorMessage = `API request failed with status ${response.status}`;
@@ -95,6 +132,34 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
   }
 };
 
+// Função de refresh token para renovação automática
+export const refreshTokenAsync = async (): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_URL}/refresh-token`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.access_token) {
+        import('./auth').then(auth => {
+          auth.setToken(data.access_token);
+        });
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.error("Erro ao renovar token:", error);
+    return false;
+  }
+};
+
 // Auth endpoints
 export const login = (email: string, password: string) => 
   fetchApi('/login', {
@@ -110,6 +175,11 @@ export const register = (name: string, email: string, password: string) =>
     authenticated: false
   });
 
+export const logout = () => 
+  fetchApi('/logout', {
+    method: 'POST'
+  });
+
 // Event endpoints
 export const getEvents = () => 
   fetchApi('/events/');
@@ -121,7 +191,8 @@ export const createEvent = (eventData: any) =>
   });
 
 export const updateEvent = (id: number, eventData: any) => {
-  console.log(`Atualizando evento ${id} com dados:`, eventData);
+  // Não fazer log dos dados sensíveis do evento
+  console.log(`Atualizando evento ${id}`);
   return fetchApi(`/events/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(eventData)

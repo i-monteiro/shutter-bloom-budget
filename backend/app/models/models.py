@@ -1,3 +1,4 @@
+
 from sqlalchemy import Column, Integer, String, Date, DateTime, Float, Boolean, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -13,6 +14,10 @@ class User(Base):
     email = Column(String(100), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    is_active = Column(Boolean, default=True)
+    
+    # Define relationship with RefreshToken
+    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
 
 class EventStatus(PyEnum):
     orcamento_recebido = "orcamento_recebido"
@@ -39,6 +44,19 @@ class Event(Base):
     motivoRecusa = Column(String, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     user = relationship("User", backref="events")
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String(255), unique=True, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    
+    # Define relationship with User
+    user = relationship("User", back_populates="refresh_tokens")
