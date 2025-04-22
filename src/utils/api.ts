@@ -69,7 +69,8 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
-      credentials: 'include'  // Importante para cookies de refresh token
+      credentials: 'include',  // Importante para cookies de refresh token
+      mode: 'cors'  // Garantir que o modo CORS esteja ativado
     });
     
     // Se o token expirou (401) e não estamos em uma requisição de retry

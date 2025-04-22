@@ -14,6 +14,26 @@ load_dotenv()
 
 app = FastAPI()
 
+# Configura CORS - IMPORTANTE: esta configuração deve vir ANTES de outros middlewares
+# para evitar problemas com requisições preflight
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://localhost:5173",  # Vite dev server padrão
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
+
 # Trusted hosts configuration
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
@@ -36,22 +56,6 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 # Cria tabelas no banco
 Base.metadata.create_all(bind=engine)
-
-# Configura CORS - atualizando aqui para incluir todas as portas necessárias
-origins = [
-    "http://localhost:3000",  # Porta padrão React
-    "http://localhost:8080",  # Porta do Vite/sua aplicação
-    "http://127.0.0.1:8080",
-    "http://127.0.0.1:3000"
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Global exception handler for better error reporting
 @app.exception_handler(Exception)
