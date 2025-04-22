@@ -64,6 +64,7 @@ export function InstallmentsSection({ form }: InstallmentsSectionProps) {
                   onSelect={field.onChange}
                   locale={ptBR}
                   initialFocus
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
