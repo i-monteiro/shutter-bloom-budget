@@ -2,7 +2,7 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime, Float, Boolean, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from app.core.database import Base
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from enum import Enum as PyEnum
 from sqlalchemy.sql import func
 
@@ -43,8 +43,8 @@ class Event(Base):
     contatoCliente = Column(String(20), nullable=True)
     motivoRecusa = Column(String, nullable=True)
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     user = relationship("User", backref="events")
