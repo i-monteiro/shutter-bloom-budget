@@ -1,5 +1,5 @@
 
-import { getToken, isAuthenticated, refreshTokenAsync } from './auth';
+import { getToken, isAuthenticated } from './auth';
 
 const API_URL = 'http://localhost:8000/api';
 
@@ -132,7 +132,7 @@ export const fetchApi = async (endpoint: string, options: RequestOptions = {}) =
   }
 };
 
-// Função de refresh token para renovação automática
+// Função de refresh token para renovação automática que está realmente exportada
 export const refreshTokenAsync = async (): Promise<boolean> => {
   try {
     const response = await fetch(`${API_URL}/refresh-token`, {

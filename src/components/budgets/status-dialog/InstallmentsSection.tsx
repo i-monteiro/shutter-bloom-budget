@@ -1,3 +1,4 @@
+
 import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -100,8 +101,8 @@ export function InstallmentsSection({ form }: InstallmentsSectionProps) {
                   type="number" 
                   value={field.value || ""}
                   onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                  min="1" 
-                  max="36"
+                  min={1}
+                  max={36}
                 />
               </FormControl>
             </FormItem>
