@@ -1,14 +1,26 @@
+
 import { BudgetFormData, BudgetStatus } from "@/types/budget";
 
 export const prepareEventPayload = (
   status: BudgetStatus,
   data: BudgetFormData & { rejectionReason?: string }
 ): Record<string, any> => {
+  // Função auxiliar para formatação correta de datas
+  const formatDate = (date: Date): string => {
+    // Ajuste para garantir que a data não seja afetada pelo fuso horário
+    const d = new Date(date);
+    // Obtém ano, mês e dia utilizando UTC para evitar problemas de fuso horário
+    const year = d.getUTCFullYear();
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const payload: Record<string, any> = {
     nomeCliente: data.clientName,
     tipoEvento: data.eventType,
-    dataOrcamento: data.budgetDate.toISOString().split("T")[0],
-    dataEvento: data.eventDate.toISOString().split("T")[0],
+    dataOrcamento: formatDate(data.budgetDate),
+    dataEvento: formatDate(data.eventDate),
     status:
       status === "pending"
         ? "orcamento_recebido"
@@ -21,7 +33,7 @@ export const prepareEventPayload = (
     iraParcelar: data.installments ?? false,
     quantParcelas: data.installmentsCount ?? 1,
     dataPrimeiroPagamento: data.firstPaymentDate
-      ? new Date(data.firstPaymentDate).toISOString().split("T")[0]
+      ? formatDate(data.firstPaymentDate)
       : null,
     contatoCliente: data.phone ?? "",
   };

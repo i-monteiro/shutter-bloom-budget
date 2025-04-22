@@ -178,17 +178,33 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
 }
 
 function apiToBudgetFormat(apiData: any): Budget {
+  const parseDateWithTimezone = (dateString: string): Date => {
+    if (!dateString) return new Date();
+    
+    // Garante que a data seja interpretada como UTC para evitar problemas de fuso horário
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      // Cria uma data usando UTC para garantir que o dia não seja alterado
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // Os meses em JS são 0-indexed
+      const day = parseInt(parts[2], 10);
+      return new Date(Date.UTC(year, month, day));
+    }
+    
+    return new Date(dateString);
+  };
+
   return {
     id: apiData.id.toString(),
     clientName: apiData.nomeCliente,
     phone: apiData.contatoCliente || "",
-    budgetDate: new Date(apiData.dataOrcamento),
-    eventDate: new Date(apiData.dataEvento),
+    budgetDate: parseDateWithTimezone(apiData.dataOrcamento),
+    eventDate: parseDateWithTimezone(apiData.dataEvento),
     eventType: apiData.tipoEvento,
     amount: apiData.valorEvento,
     installments: apiData.iraParcelar || false,
     installmentsCount: apiData.quantParcelas || 1,
-    firstPaymentDate: apiData.dataPrimeiroPagamento ? new Date(apiData.dataPrimeiroPagamento) : undefined,
+    firstPaymentDate: apiData.dataPrimeiroPagamento ? parseDateWithTimezone(apiData.dataPrimeiroPagamento) : undefined,
     status: mapApiToStatus(apiData.status),
     createdAt: new Date(apiData.created_at || new Date()),
     updatedAt: new Date(apiData.updated_at || new Date())
