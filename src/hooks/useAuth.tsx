@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { login as apiLogin, register as apiRegister } from '@/utils/api';
+import { login as apiLogin, register as apiRegister, logout as apiLogout } from '@/utils/api';
 import { 
   setToken, 
   removeToken, 
@@ -31,20 +31,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuthentication = () => {
+    const checkAuthentication = async () => {
       const authenticated = checkAuth();
-      setIsAuthenticated(authenticated);
       
       if (authenticated) {
-        setUserName(getUserName());
-        setUserId(getUserId());
+        try {
+          // Tenta verificar se o token é válido fazendo uma requisição simples
+          // Se o banco for apagado, esta chamada falhará e deslogará o usuário
+          await apiLogout();
+          
+          setIsAuthenticated(true);
+          setUserName(getUserName());
+          setUserId(getUserId());
+        } catch (error) {
+          console.error('Token inválido ou usuário não existe mais no banco:', error);
+          // Se falhar, remove o token e redireciona para login
+          removeToken();
+          setIsAuthenticated(false);
+          setUserName(null);
+          setUserId(null);
+          navigate('/login');
+        }
+      } else {
+        setIsAuthenticated(false);
       }
       
       setIsLoading(false);
     };
     
     checkAuthentication();
-  }, []);
+  }, [navigate]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -82,12 +98,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    removeToken();
-    setIsAuthenticated(false);
-    setUserName(null);
-    setUserId(null);
-    toast.info('Você foi desconectado.');
-    navigate('/login');
+    try {
+      apiLogout().catch(console.error); // Apenas tenta deslogar no backend, mas não espera
+    } finally {
+      removeToken();
+      setIsAuthenticated(false);
+      setUserName(null);
+      setUserId(null);
+      toast.info('Você foi desconectado.');
+      navigate('/login');
+    }
   };
 
   return (

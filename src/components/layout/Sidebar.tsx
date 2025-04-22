@@ -8,8 +8,10 @@ import {
   Menu, 
   Receipt, 
   Settings, 
-  X 
+  X,
+  LogOut 
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SidebarProps {
   userName: string;
@@ -19,6 +21,7 @@ const Sidebar = ({ userName }: SidebarProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -28,6 +31,10 @@ const Sidebar = ({ userName }: SidebarProps) => {
     { icon: CalendarDays, text: "Eventos", path: "/events" },
     { icon: Settings, text: "Configurações", path: "/settings" },
   ];
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <>
@@ -77,8 +84,17 @@ const Sidebar = ({ userName }: SidebarProps) => {
 
           {/* User info */}
           <div className="p-4 border-t">
-            <p className="text-sm font-medium">{userName}</p>
-            <p className="text-sm text-gray-500 text-center">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">{userName}</p>
+              <button 
+                onClick={handleLogout} 
+                className="text-gray-600 hover:text-primary transition-colors p-2 rounded-full hover:bg-gray-100"
+                title="Sair"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 text-center mt-2">
               © 2025 ShutterBloom
             </p>
           </div>
