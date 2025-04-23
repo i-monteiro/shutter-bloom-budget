@@ -72,24 +72,49 @@ export function BudgetForm({
   const showInstallments = budgetStatus === 'accepted';
   const [showInstallmentsFields, setShowInstallmentsFields] = useState(initialData?.installments || false);
 
+  // Normalizar as datas iniciais para evitar problemas de fuso horário
+  const normalizeDate = (date: Date | undefined): Date => {
+    if (!date) return new Date();
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(12, 0, 0, 0); // Meio-dia para evitar problemas de timezone
+    return normalizedDate;
+  };
+
   const form = useForm<BudgetFormData>({
     resolver: zodResolver(createBudgetFormSchema(showAmount, showInstallments)),
     defaultValues: {
       clientName: initialData?.clientName || "",
       phone: initialData?.phone || "",
-      budgetDate: initialData?.budgetDate || new Date(),
-      eventDate: initialData?.eventDate || new Date(),
+      budgetDate: normalizeDate(initialData?.budgetDate),
+      eventDate: normalizeDate(initialData?.eventDate),
       eventType: initialData?.eventType || "casamento",
       amount: initialData?.amount || 0,
       installments: initialData?.installments || false,
       installmentsCount: initialData?.installmentsCount || 1,
-      firstPaymentDate: initialData?.firstPaymentDate || new Date(),
+      firstPaymentDate: normalizeDate(initialData?.firstPaymentDate),
     },
   });
 
   function handleSubmit(data: BudgetFormData) {
-    onSubmit(data);
+    // Normalizar todas as datas antes de enviar
+    const normalizedData = {
+      ...data,
+      budgetDate: normalizeDate(data.budgetDate),
+      eventDate: normalizeDate(data.eventDate),
+      firstPaymentDate: data.firstPaymentDate ? normalizeDate(data.firstPaymentDate) : undefined,
+    };
+    onSubmit(normalizedData);
   }
+
+  // Função para lidar com a seleção de data preservando o dia correto
+  const handleDateSelect = (field: any, date: Date | undefined) => {
+    if (!date) return;
+    
+    // Garantir que a data selecionada mantenha o dia correto
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(12, 0, 0, 0);
+    field.onChange(normalizedDate);
+  };
 
   return (
     <Form {...form}>
@@ -166,7 +191,7 @@ export function BudgetForm({
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP", { locale: ptBR })
+                          format(field.value, "dd/MM/yyyy", { locale: ptBR })
                         ) : (
                           <span>Selecione a data</span>
                         )}
@@ -178,9 +203,10 @@ export function BudgetForm({
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={field.onChange}
+                      onSelect={(date) => handleDateSelect(field, date)}
                       locale={ptBR}
                       initialFocus
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
@@ -206,7 +232,7 @@ export function BudgetForm({
                         )}
                       >
                         {field.value ? (
-                          format(field.value, "PPP", { locale: ptBR })
+                          format(field.value, "dd/MM/yyyy", { locale: ptBR })
                         ) : (
                           <span>Selecione a data</span>
                         )}
@@ -218,9 +244,10 @@ export function BudgetForm({
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={field.onChange}
+                      onSelect={(date) => handleDateSelect(field, date)}
                       locale={ptBR}
                       initialFocus
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
@@ -272,7 +299,7 @@ export function BudgetForm({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP", { locale: ptBR })
+                            format(field.value, "dd/MM/yyyy", { locale: ptBR })
                           ) : (
                             <span>Selecione a data</span>
                           )}
@@ -284,9 +311,10 @@ export function BudgetForm({
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => handleDateSelect(field, date)}
                         locale={ptBR}
                         initialFocus
+                        className="pointer-events-auto"
                       />
                     </PopoverContent>
                   </Popover>

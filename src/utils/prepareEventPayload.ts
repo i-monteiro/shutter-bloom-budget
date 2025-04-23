@@ -7,12 +7,17 @@ export const prepareEventPayload = (
 ): Record<string, any> => {
   // Função auxiliar para formatação correta de datas
   const formatDate = (date: Date): string => {
-    // Ajuste para garantir que a data não seja afetada pelo fuso horário
+    if (!date) return null;
+    
+    // Normaliza a data para evitar problemas de timezone
     const d = new Date(date);
-    // Obtém ano, mês e dia utilizando UTC para evitar problemas de fuso horário
-    const year = d.getUTCFullYear();
-    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(d.getUTCDate()).padStart(2, '0');
+    d.setHours(12, 0, 0, 0); // Meio-dia para evitar problemas de timezone
+    
+    // Obtém ano, mês e dia utilizando getters locais para evitar problemas de UTC
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    
     return `${year}-${month}-${day}`;
   };
 
