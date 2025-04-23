@@ -19,17 +19,26 @@ const EditBudget = () => {
     if (id) {
       const budget = getBudget(id);
       if (budget) {
+        // Normaliza as datas ao carregar os dados do orçamento
+        const normalizeDate = (date: Date | undefined): Date => {
+          if (!date) return new Date();
+          const normalizedDate = new Date(date);
+          normalizedDate.setHours(12, 0, 0, 0);
+          return normalizedDate;
+        };
+
         const { clientName, phone, budgetDate, eventDate, eventType, amount, installments, installmentsCount, firstPaymentDate, status } = budget;
+        
         setBudgetData({
           clientName,
           phone,
-          budgetDate,
-          eventDate,
+          budgetDate: normalizeDate(budgetDate),
+          eventDate: normalizeDate(eventDate),
           eventType,
           amount,
           installments,
           installmentsCount,
-          firstPaymentDate
+          firstPaymentDate: firstPaymentDate ? normalizeDate(firstPaymentDate) : undefined
         });
         setBudgetStatus(status);
       } else {

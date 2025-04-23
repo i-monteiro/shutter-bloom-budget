@@ -11,7 +11,22 @@ const CreateBudget = () => {
   const { addBudget } = useBudgets();
 
   const handleSubmit = (data: BudgetFormData) => {
-    addBudget(data);
+    // Normaliza todas as datas ao criar um novo orçamento
+    const normalizeDate = (date: Date | undefined): Date => {
+      if (!date) return new Date();
+      const normalizedDate = new Date(date);
+      normalizedDate.setHours(12, 0, 0, 0);
+      return normalizedDate;
+    };
+
+    const normalizedData = {
+      ...data,
+      budgetDate: normalizeDate(data.budgetDate),
+      eventDate: normalizeDate(data.eventDate),
+      firstPaymentDate: data.firstPaymentDate ? normalizeDate(data.firstPaymentDate) : undefined,
+    };
+
+    addBudget(normalizedData);
     navigate("/budgets");
   };
 
