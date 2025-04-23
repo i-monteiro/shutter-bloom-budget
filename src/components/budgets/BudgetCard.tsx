@@ -45,6 +45,17 @@ export function BudgetCard({ budget }: BudgetCardProps) {
     currency: 'BRL' 
   }).format(budget.amount) : 'Não definido';
 
+  const formatDate = (date: Date) => {
+    try {
+      const d = new Date(date);
+      d.setHours(12, 0, 0, 0);
+      return format(d, "dd/MM/yyyy", { locale: ptBR });
+    } catch (error) {
+      console.error("Erro ao formatar data:", error);
+      return "Data inválida";
+    }
+  };
+
   const handleStatusSelect = (newStatus: "pending" | "sent" | "accepted" | "rejected") => {
     setSelectedStatus(newStatus);
     setTimeout(() => {
@@ -97,7 +108,7 @@ export function BudgetCard({ budget }: BudgetCardProps) {
         <div className="space-y-2 text-sm">
           <div className="flex items-center">
             <CalendarDays className="w-4 h-4 mr-2 text-muted-foreground" />
-            <span>Evento: {format(budget.eventDate, "PPP", { locale: ptBR })}</span>
+            <span>Evento: {formatDate(budget.eventDate)}</span>
           </div>
           
           <div className="flex items-center">

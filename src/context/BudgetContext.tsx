@@ -1,3 +1,4 @@
+
 'use client';
 
 import { prepareEventPayload } from "@/utils/prepareEventPayload";
@@ -181,17 +182,27 @@ function apiToBudgetFormat(apiData: any): Budget {
   const parseDateWithTimezone = (dateString: string): Date => {
     if (!dateString) return new Date();
     
-    // Garante que a data seja interpretada como UTC para evitar problemas de fuso horário
+    // Fix para garantir que as datas sejam exibidas corretamente
     const parts = dateString.split('-');
     if (parts.length === 3) {
-      // Cria uma data usando UTC para garantir que o dia não seja alterado
+      // Cria uma data com o dia correto, sem alterar por timezone
       const year = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10) - 1; // Os meses em JS são 0-indexed
       const day = parseInt(parts[2], 10);
-      return new Date(Date.UTC(year, month, day));
+      
+      // Criamos a data mantendo o dia original sem conversão timezone
+      const date = new Date(year, month, day);
+      
+      // Ajuste para garantir que o dia exibido seja o mesmo do banco
+      date.setHours(12, 0, 0, 0); // Meio-dia para evitar problemas de timezone
+      
+      return date;
     }
     
-    return new Date(dateString);
+    // Fallback para datas em outro formato
+    const date = new Date(dateString);
+    date.setHours(12, 0, 0, 0); // Meio-dia para evitar problemas de timezone
+    return date;
   };
 
   return {
