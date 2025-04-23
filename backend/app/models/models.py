@@ -6,6 +6,9 @@ from datetime import datetime, timezone, timedelta
 from enum import Enum as PyEnum
 from sqlalchemy.sql import func
 
+def brasilia_now():
+    return datetime.now(timezone(timedelta(hours=-3)))
+
 class User(Base):
     __tablename__ = "users"
     
@@ -13,7 +16,7 @@ class User(Base):
     name = Column(String(100), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), default=brasilia_now)
     is_active = Column(Boolean, default=True)
     
     # Define relationship with RefreshToken
@@ -43,8 +46,8 @@ class Event(Base):
     contatoCliente = Column(String(20), nullable=True)
     motivoRecusa = Column(String, nullable=True)
 
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=brasilia_now)
+    updated_at = Column(DateTime(timezone=True), default=brasilia_now, onupdate=brasilia_now)
 
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     user = relationship("User", backref="events")
