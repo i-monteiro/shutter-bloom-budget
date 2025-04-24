@@ -1,53 +1,55 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Plus, 
-  ArrowRight, 
-  TrendingUp, 
-  TrendingDown,
-  Calendar, 
-  FileText, 
-  Users, 
-  CreditCard
-} from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import {
+  Plus,
+  ArrowRight,
+  FileText,
+  Calendar,
+  Users,
+  CreditCard,
+} from "lucide-react";
 
+import { useBudgets } from "@/context/BudgetContext";
+import { useAuth } from "@/hooks/useAuth";
+import { BudgetStatusBadge } from "@/components/ui/budget-status-badge";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+// Gráficos
+import { MonthlyEvents } from "@/components/dashboard/MonthlyEvents";
+import { MonthlyRevenue } from "@/components/dashboard/MonthlyRevenue";
+
+/* ----------------- UI helpers ----------------- */
 interface StatsCardProps {
   title: string;
-  value: string;
+  value: string | number;
   description: string;
   icon: React.ElementType;
-  trend: string;
-  className?: string;
 }
 
-const StatsCard = ({ title, value, description, icon: Icon, trend, className }: StatsCardProps) => {
-  const isTrendUp = trend.startsWith('+');
-  
-  return (
-    <Card className={`border-gray-800 bg-gray-900/40 backdrop-blur-sm ${className}`}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium text-gray-400">{title}</CardTitle>
-          <div className="bg-gray-800/50 p-2 rounded-full">
-            <Icon className="h-4 w-4 text-purple-400" />
-          </div>
+const StatsCard = ({ title, value, description, icon: Icon }: StatsCardProps) => (
+  <Card className="border-gray-800 bg-gray-900/40 backdrop-blur-sm">
+    <CardHeader className="pb-2">
+      <div className="flex items-center justify-between">
+        <CardTitle className="text-sm font-medium text-gray-400">{title}</CardTitle>
+        <div className="bg-gray-800/50 p-2 rounded-full">
+          <Icon className="h-4 w-4 text-purple-400" />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold text-white">{value}</div>
-        <div className="flex items-center mt-1">
-          <span className={`text-xs font-medium flex items-center ${isTrendUp ? 'text-green-500' : 'text-red-500'}`}>
-            {isTrendUp ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-            {trend}
-          </span>
-          <span className="text-xs text-gray-400 ml-2">{description}</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+      </div>
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold text-white">{value}</div>
+      <span className="text-xs text-gray-400">{description}</span>
+    </CardContent>
+  </Card>
+);
 
 interface ActionButtonProps {
   to: string;
@@ -71,64 +73,99 @@ const ActionButton = ({ to, icon: Icon, label, description }: ActionButtonProps)
   </Link>
 );
 
+/* ----------------- Dashboard ----------------- */
 const Dashboard = () => {
-  // Dados fictícios para os cards de estatísticas
-  const stats = [
-    {
-      title: 'Orçamentos pendentes',
-      value: '12',
-      description: 'vs. mês passado',
-      icon: FileText,
-      trend: '+4.5%',
-    },
-    {
-      title: 'Eventos agendados',
-      value: '8',
-      description: 'próximos 30 dias',
-      icon: Calendar,
-      trend: '+12.3%',
-    },
-    {
-      title: 'Novos clientes',
-      value: '5',
-      description: 'este mês',
-      icon: Users,
-      trend: '-2.3%',
-    },
-    {
-      title: 'Receita mensal',
-      value: 'R$ 8.650',
-      description: 'maio 2023',
-      icon: CreditCard,
-      trend: '+18.2%',
-    },
-  ];
-  
+  const { budgets, isLoading } = useBudgets();
+  const { userName } = useAuth();
+
+  // KPIs
+  const stats = useMemo(() => {
+    const totalBudgets = budgets.length;
+    const sentProposals = budgets.filter(b => b.status === "sent").length;
+    const acceptedProposals = budgets.filter(b => b.status === "accepted").length;
+
+    const totalRevenue = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(
+      budgets
+        .filter(b => b.status === "accepted")
+        .reduce((sum, b) => sum + (b.amount || 0), 0)
+    );
+
+    return { totalBudgets, sentProposals, acceptedProposals, totalRevenue };
+  }, [budgets]);
+
+  // listas
+  const recentBudgets = [...budgets]
+    .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt))
+    .slice(0, 5);
+
+  const upcomingEvents = budgets
+    .filter(b => b.status === "accepted" && b.eventDate)
+    .sort((a, b) => +new Date(a.eventDate) - +new Date(b.eventDate))
+    .slice(0, 5);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Cabeçalho */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white">
+            Olá, {userName || "Fotógrafo"}
+          </h1>
           <p className="text-gray-400 mt-1">Bem-vindo ao seu painel de controle</p>
         </div>
-        <div className="flex gap-3">
-          <Link to="/app/budgets/new">
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo orçamento
-            </Button>
-          </Link>
-        </div>
+        <Link to="/app/budgets/new">
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo orçamento
+          </Button>
+        </Link>
       </div>
-      
-      {/* Cards de estatísticas */}
+
+      {/* KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatsCard key={index} {...stat} />
-        ))}
+        <StatsCard
+          title="Total de Orçamentos"
+          value={stats.totalBudgets}
+          description="Todos os tempos"
+          icon={FileText}
+        />
+        <StatsCard
+          title="Propostas Enviadas"
+          value={stats.sentProposals}
+          description="Últimos 30 dias"
+          icon={Calendar}
+        />
+        <StatsCard
+          title="Sessões Confirmadas"
+          value={stats.acceptedProposals}
+          description="Este mês"
+          icon={Users}
+        />
+        <StatsCard
+          title="Receita Gerada"
+          value={stats.totalRevenue}
+          description="Total confirmado"
+          icon={CreditCard}
+        />
       </div>
-      
+
+      {/* Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MonthlyEvents budgets={budgets} />
+        <MonthlyRevenue budgets={budgets} />
+      </div>
+
       {/* Ações rápidas */}
       <div>
         <h2 className="text-lg font-semibold text-white mb-4">Ações rápidas</h2>
@@ -147,8 +184,8 @@ const Dashboard = () => {
           />
         </div>
       </div>
-      
-      {/* Orçamentos recentes e próximos eventos */}
+
+      {/* Orçamentos recentes & próximos eventos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Orçamentos recentes */}
         <Card className="border-gray-800 bg-gray-900/40 backdrop-blur-sm">
@@ -156,116 +193,102 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="text-white">Orçamentos recentes</CardTitle>
               <Link to="/app/budgets">
-                <Button variant="link" className="text-purple-400 hover:text-purple-300 p-0">
+                <Button variant="link" className="text-purple-400 p-0">
                   Ver todos
                 </Button>
               </Link>
             </div>
-            <CardDescription>
-              Últimos orçamentos criados ou atualizados
-            </CardDescription>
+            <CardDescription>Últimas alterações</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {/* Item de orçamento */}
-              <div className="bg-gray-800/40 rounded-lg p-4 border border-gray-800/60">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium text-white">João Silva</h3>
-                    <p className="text-gray-400 text-sm">Casamento - 20/08/2023</p>
+              {recentBudgets.map(b => (
+                <div
+                  key={b.id}
+                  className="bg-gray-800/40 rounded-lg p-4 border border-gray-800/60"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium text-white">{b.clientName}</h3>
+                      <p className="text-gray-400 text-sm">
+                        {b.eventType} - {new Date(b.eventDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <BudgetStatusBadge status={b.status} />
                   </div>
-                  <div className="bg-yellow-500/20 text-yellow-500 text-xs font-medium px-2 py-1 rounded-full border border-yellow-500/20">
-                    Pendente
+                  <div className="mt-3 flex justify-between items-center">
+                    <span className="text-gray-300 font-medium">
+                      {new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(b.amount || 0)}
+                    </span>
+                    <Link to={`/app/budgets/edit/${b.id}`}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-purple-400"
+                      >
+                        Visualizar
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-                <div className="mt-3 flex justify-between items-center">
-                  <span className="text-gray-300 font-medium">R$ 3.500,00</span>
-                  <Link to="/app/budgets/edit/1">
-                    <Button size="sm" variant="outline" className="h-8 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-purple-400">
-                      Visualizar
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-              
-              {/* Item de orçamento */}
-              <div className="bg-gray-800/40 rounded-lg p-4 border border-gray-800/60">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium text-white">Maria Souza</h3>
-                    <p className="text-gray-400 text-sm">Aniversário - 05/09/2023</p>
-                  </div>
-                  <div className="bg-blue-500/20 text-blue-500 text-xs font-medium px-2 py-1 rounded-full border border-blue-500/20">
-                    Enviado
-                  </div>
-                </div>
-                <div className="mt-3 flex justify-between items-center">
-                  <span className="text-gray-300 font-medium">R$ 1.800,00</span>
-                  <Link to="/app/budgets/edit/2">
-                    <Button size="sm" variant="outline" className="h-8 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-purple-400">
-                      Visualizar
-                    </Button>
-                  </Link>
-                </div>
-              </div>
+              ))}
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Próximos eventos */}
         <Card className="border-gray-800 bg-gray-900/40 backdrop-blur-sm">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-white">Próximos eventos</CardTitle>
               <Link to="/app/events">
-                <Button variant="link" className="text-purple-400 hover:text-purple-300 p-0">
+                <Button variant="link" className="text-purple-400 p-0">
                   Ver agenda
                 </Button>
               </Link>
             </div>
-            <CardDescription>
-              Seus eventos agendados para os próximos dias
-            </CardDescription>
+            <CardDescription>Seus eventos agendados</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {/* Item de evento */}
-              <div className="bg-gray-800/40 rounded-lg p-4 border border-gray-800/60">
-                <div className="flex items-start gap-4">
-                  <div className="bg-gray-700 rounded-lg text-center p-2 w-14">
-                    <span className="text-gray-400 text-xs block">JUL</span>
-                    <span className="text-xl font-bold text-white">15</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-white">Evento Corporativo</h3>
-                    <p className="text-gray-400 text-sm">Empresa XYZ - 14:00</p>
-                    <div className="mt-2">
-                      <span className="inline-block bg-purple-500/20 text-purple-400 text-xs font-medium px-2 py-1 rounded-full border border-purple-500/20">
-                        Confirmado
-                      </span>
+              {upcomingEvents.map(e => {
+                const dateObj = new Date(e.eventDate);
+                const month = dateObj
+                  .toLocaleString("pt-BR", { month: "short" })
+                  .toUpperCase();
+                const day = dateObj.getDate();
+                return (
+                  <div
+                    key={e.id}
+                    className="bg-gray-800/40 rounded-lg p-4 border border-gray-800/60"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="bg-gray-700 rounded-lg text-center p-2 w-14">
+                        <span className="text-gray-400 text-xs block">{month}</span>
+                        <span className="text-xl font-bold text-white">{day}</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-white">{e.eventType}</h3>
+                        <p className="text-gray-400 text-sm">
+                          {e.clientName} -{" "}
+                          {dateObj.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        <div className="mt-2">
+                          <span className="inline-block bg-purple-500/20 text-purple-400 text-xs font-medium px-2 py-1 rounded-full border border-purple-500/20">
+                            Confirmado
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              {/* Item de evento */}
-              <div className="bg-gray-800/40 rounded-lg p-4 border border-gray-800/60">
-                <div className="flex items-start gap-4">
-                  <div className="bg-gray-700 rounded-lg text-center p-2 w-14">
-                    <span className="text-gray-400 text-xs block">JUL</span>
-                    <span className="text-xl font-bold text-white">20</span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-white">Casamento João e Ana</h3>
-                    <p className="text-gray-400 text-sm">Buffet Central - 16:30</p>
-                    <div className="mt-2">
-                      <span className="inline-block bg-yellow-500/20 text-yellow-500 text-xs font-medium px-2 py-1 rounded-full border border-yellow-500/20">
-                        Aguardando confirmação
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

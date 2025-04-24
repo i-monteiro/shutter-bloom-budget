@@ -20,11 +20,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 interface BudgetCardProps {
@@ -34,71 +34,62 @@ interface BudgetCardProps {
 export function BudgetCard({ budget }: BudgetCardProps) {
   const navigate = useNavigate();
   const { updateStatus, deleteBudget } = useBudgets();
+
   const [isDeleting, setIsDeleting] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<'pending' | 'sent' | 'accepted' | 'rejected'>('pending');
-  
+  const [selectedStatus, setSelectedStatus] =
+    useState<"pending" | "sent" | "accepted" | "rejected">("pending");
+
   const dialogKey = statusDialogOpen ? Date.now() : 0;
 
-  const formattedAmount = budget.amount ? new Intl.NumberFormat('pt-BR', { 
-    style: 'currency', 
-    currency: 'BRL' 
-  }).format(budget.amount) : 'Não definido';
+  /* ---------------- utils ---------------- */
+  const formattedAmount = budget.amount
+    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+        budget.amount
+      )
+    : "Não definido";
 
   const formatDate = (date: Date) => {
     try {
       const d = new Date(date);
       d.setHours(12, 0, 0, 0);
       return format(d, "dd/MM/yyyy", { locale: ptBR });
-    } catch (error) {
-      console.error("Erro ao formatar data:", error);
+    } catch {
       return "Data inválida";
     }
   };
 
-  const handleStatusSelect = (newStatus: "pending" | "sent" | "accepted" | "rejected") => {
+  const handleStatusSelect = (
+    newStatus: "pending" | "sent" | "accepted" | "rejected"
+  ) => {
     setSelectedStatus(newStatus);
-    setTimeout(() => {
-      setStatusDialogOpen(true);
-    }, 0);
+    setTimeout(() => setStatusDialogOpen(true), 0);
   };
 
-  const handleStatusChange = (id: string, newStatus: "pending" | "sent" | "accepted" | "rejected", data: any) => {
+  const handleStatusChange = (
+    id: string,
+    newStatus: "pending" | "sent" | "accepted" | "rejected",
+    data: any
+  ) => {
     updateStatus(id, newStatus, data);
     setStatusDialogOpen(false);
   };
 
-  const handleEdit = () => {
-    navigate(`/budgets/edit/${budget.id}`);
-  };
-
-  const handleDelete = () => {
-    setIsDeleting(true);
-  };
-
-  const confirmDelete = () => {
-    deleteBudget(budget.id);
-    setIsDeleting(false);
-  };
-
-  const handleDialogOpenChange = (isOpen: boolean) => {
-    setStatusDialogOpen(isOpen);
-  };
-
   const eventTypeLabels = {
-    wedding: 'Casamento',
-    birthday: 'Aniversário',
-    corporate: 'Corporativo',
-    other: 'Outro'
-  };
+    wedding: "Casamento",
+    birthday: "Aniversário",
+    corporate: "Corporativo",
+    other: "Outro",
+  } as const;
 
+  /* ---------------- card ---------------- */
   return (
-    <Card className="card-hover">
+    <Card className="border-gray-800 bg-gray-900/40 backdrop-blur-sm rounded-xl">
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h3 className="font-semibold text-lg">{budget.clientName}</h3>
-            <span className="text-sm text-muted-foreground">
+            <h3 className="font-semibold text-lg text-white">{budget.clientName}</h3>
+            <span className="text-sm text-gray-400">
               {eventTypeLabels[budget.eventType]}
             </span>
           </div>
@@ -107,30 +98,34 @@ export function BudgetCard({ budget }: BudgetCardProps) {
 
         <div className="space-y-2 text-sm">
           <div className="flex items-center">
-            <CalendarDays className="w-4 h-4 mr-2 text-muted-foreground" />
-            <span>Evento: {formatDate(budget.eventDate)}</span>
+            <CalendarDays className="w-4 h-4 mr-2 text-gray-400" />
+            <span className="text-gray-300">Evento: {formatDate(budget.eventDate)}</span>
           </div>
-          
+
           <div className="flex items-center">
-            <span className="font-medium text-base">{formattedAmount}</span>
+            <span className="font-medium text-base text-white">{formattedAmount}</span>
             {budget.installments && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                {budget.installmentsCount}x de {new Intl.NumberFormat('pt-BR', { 
-                  style: 'currency', 
-                  currency: 'BRL' 
+              <span className="ml-2 text-xs text-gray-400">
+                {budget.installmentsCount}x de{" "}
+                {new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
                 }).format(budget.amount / budget.installmentsCount)}
               </span>
             )}
           </div>
         </div>
       </CardContent>
-      
+
       <CardFooter className="flex justify-between p-4 pt-0">
+        {/* Dropdown alterar status */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">Mudar Status</Button>
+            <Button variant="outline" size="sm">
+              Mudar Status
+            </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent className="bg-gray-900/60 backdrop-blur-sm border-gray-800">
             <DropdownMenuItem onClick={() => handleStatusSelect("pending")}>
               Pendente
             </DropdownMenuItem>
@@ -151,36 +146,40 @@ export function BudgetCard({ budget }: BudgetCardProps) {
             key={dialogKey}
             budget={budget}
             open={statusDialogOpen}
-            onOpenChange={handleDialogOpenChange}
+            onOpenChange={setStatusDialogOpen}
             onStatusChange={handleStatusChange}
             selectedStatus={selectedStatus}
           />
         )}
-        
+
+        {/* editar | apagar */}
         <div className="flex gap-2">
-          <Button size="icon" variant="outline" onClick={handleEdit}>
+          <Button size="icon" variant="outline" onClick={() => navigate(`/budgets/edit/${budget.id}`)}>
             <Edit className="h-4 w-4" />
           </Button>
-          
+
           <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
             <AlertDialogTrigger asChild>
               <Button size="icon" variant="outline" className="text-destructive">
                 <Trash className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-gray-900/60 backdrop-blur-sm border-gray-800">
               <AlertDialogHeader>
-                <AlertDialogTitle>Excluir orçamento</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tem certeza que deseja excluir o orçamento para {budget.clientName}? 
-                  Esta ação não pode ser desfeita.
+                <AlertDialogTitle className="text-white">Excluir orçamento</AlertDialogTitle>
+                <AlertDialogDescription className="text-gray-300">
+                  Tem certeza que deseja excluir o orçamento para {budget.clientName}? Essa
+                  ação não pode ser desfeita.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={confirmDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                <AlertDialogAction
+                  onClick={() => {
+                    deleteBudget(budget.id);
+                    setIsDeleting(false);
+                  }}
+                  className="bg-destructive hover:bg-destructive/90"
                 >
                   Excluir
                 </AlertDialogAction>

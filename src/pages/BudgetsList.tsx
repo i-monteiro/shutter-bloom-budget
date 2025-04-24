@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useBudgets } from "@/context/BudgetContext";
 import { BudgetCard } from "@/components/budgets/BudgetCard";
@@ -21,53 +20,48 @@ const BudgetsList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<BudgetStatus | "all">("all");
 
-  // Filter budgets based on search term and status
-  const filteredBudgets = budgets.filter((budget) => {
-    const matchesSearch = budget.clientName
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || budget.status === statusFilter;
-    
+  // Filtra pelo termo e status
+  const filteredBudgets = budgets.filter((b) => {
+    const matchesSearch = b.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || b.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Cabeçalho */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Orçamentos</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-white">Orçamentos</h1>
+          <p className="text-gray-400 mt-1">
             Gerencie seus orçamentos e acompanhe o status das propostas.
           </p>
         </div>
-        <Button 
-          className="bg-primary" 
-          onClick={() => navigate("/budgets/new")}
-        >
+        <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={() => navigate("/budgets/new")}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Orçamento
         </Button>
       </div>
 
+      {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Buscar por cliente..."
-            className="pl-8"
+            className="pl-8 bg-gray-900/40 backdrop-blur-sm border-gray-800 text-white placeholder:text-gray-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Select
           value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as BudgetStatus | "all")}
+          onValueChange={(v) => setStatusFilter(v as BudgetStatus | "all")}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] bg-gray-900/40 backdrop-blur-sm border-gray-800 text-white">
             <SelectValue placeholder="Filtrar por status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-gray-900/60 backdrop-blur-sm border-gray-800">
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="pending">Pendente</SelectItem>
             <SelectItem value="sent">Enviado</SelectItem>
@@ -77,15 +71,22 @@ const BudgetsList = () => {
         </Select>
       </div>
 
-      {filteredBudgets.length > 0 ? (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {filteredBudgets.map((budget) => (
-            <BudgetCard key={budget.id} budget={budget} />
+      {/* Lista */}
+      {filteredBudgets.length ? (
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {filteredBudgets.map((b) => (
+            <div
+              key={b.id}
+              className="border border-gray-800 bg-gray-900/40 backdrop-blur-sm rounded-xl p-1"
+            >
+              {/* Reaproveita o cartão interno que você já tinha */}
+              <BudgetCard budget={b} />
+            </div>
           ))}
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">
+          <p className="text-gray-400">
             {searchTerm || statusFilter !== "all"
               ? "Nenhum orçamento encontrado com os filtros aplicados."
               : "Nenhum orçamento cadastrado. Crie um novo orçamento para começar!"}
