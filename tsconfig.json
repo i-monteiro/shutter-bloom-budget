@@ -5,11 +5,12 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
-    "baseUrl": ".",                           // Permite o uso de caminhos relativos à raiz
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]                        // Alias para importar com "@/..."
+      "@/*": ["src/*"],
+      "@shared/*": ["src/shared/*"]
     },
-    "forceConsistentCasingInFileNames": true, // ⚠️ Força uso de nomes com capitalização consistente
+    "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "skipLibCheck": true,
     "noImplicitAny": false,

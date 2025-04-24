@@ -1,103 +1,99 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
 import { motion } from 'framer-motion';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-const Testimonials = () => {
-  const testimonials = [
+const FAQ = () => {
+  const faqs = [
     {
-      name: "Ana Clara",
-      role: "Fotógrafa de Casamentos",
-      avatar: "AC",
-      image: "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&h=150&q=80",
-      quote: "Antes do FotoGestão, eu perdia horas com planilhas e calendários. Agora tenho tudo organizado em um só lugar. Minha produtividade aumentou e consigo focar no que realmente importa: fazer fotos incríveis!"
+      question: "Como funciona o período de teste gratuito?",
+      answer: "Você tem acesso a todas as funcionalidades da plataforma por 14 dias, sem necessidade de cartão de crédito. Após esse período, você pode escolher um de nossos planos para continuar utilizando o sistema."
     },
     {
-      name: "Ricardo Oliveira",
-      role: "Fotógrafo de Produtos",
-      avatar: "RO",
-      image: "https://images.unsplash.com/photo-1531384441138-2736e62e0919?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&h=150&q=80",
-      quote: "O controle financeiro me ajudou a entender quais tipos de sessões são mais rentáveis. Em apenas 3 meses, aumentei meu faturamento em 35% focando nos serviços certos."
+      question: "Posso cancelar minha assinatura a qualquer momento?",
+      answer: "Sim, você pode cancelar sua assinatura quando desejar. Não há contratos de longo prazo ou taxas de cancelamento."
     },
     {
-      name: "Fernanda Santos",
-      role: "Fotógrafa de Retratos",
-      avatar: "FS",
-      image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&h=150&q=80",
-      quote: "O sistema de agendamento online reduziu drasticamente o vai-e-vem de mensagens para marcação de sessões. Meus clientes adoram a praticidade e eu economizo um tempo precioso."
+      question: "O sistema funciona em dispositivos móveis?",
+      answer: "Sim, nossa plataforma é totalmente responsiva e pode ser acessada de qualquer dispositivo: computadores, tablets e smartphones."
+    },
+    {
+      question: "Preciso instalar algum software no meu computador?",
+      answer: "Não, o Fotoessence é uma aplicação web que funciona diretamente no navegador. Não é necessário instalar nenhum software adicional."
+    },
+    {
+      question: "Meus dados estão seguros na plataforma?",
+      answer: "Sim, utilizamos criptografia de ponta a ponta e seguimos as melhores práticas de segurança da informação para proteger todos os seus dados."
+    },
+    {
+      question: "O sistema permite integração com outros aplicativos?",
+      answer: "Sim, oferecemos integração com Google Calendar, Microsoft Outlook, QuickBooks, sistemas de e-mail marketing e várias outras ferramentas populares."
+    },
+    {
+      question: "Existe um limite de clientes ou projetos que posso gerenciar?",
+      answer: "Não há limites. Nossos planos são baseados em usuários, não no volume de dados, então você pode gerenciar quantos clientes e projetos precisar."
+    },
+    {
+      question: "Vocês oferecem suporte técnico?",
+      answer: "Sim, oferecemos suporte por e-mail, chat e telefone em todos os planos. Além disso, temos uma extensa base de conhecimento e tutoriais em vídeo."
     }
   ];
 
   return (
-    <section id="depoimentos" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="faq" className="py-20 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+      {/* Partículas roxas no fundo */}
+      <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-700/20 rounded-full blur-3xl z-0"></div>
+      <div className="absolute top-60 -left-20 w-60 h-60 bg-purple-600/10 rounded-full blur-3xl z-0"></div>
+      <div className="absolute bottom-0 right-20 w-40 h-40 bg-indigo-700/20 rounded-full blur-3xl z-0"></div>
+
+      <div className="max-w-4xl mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
           <motion.h2 
-            className="text-3xl md:text-4xl font-semibold text-[#2B3A67] mb-6"
+            className="text-4xl font-bold text-white mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            O Que Dizem Nossos Clientes
+            Perguntas Frequentes
           </motion.h2>
           <motion.p 
-            className="text-xl text-[#4A4A4A]/80 mb-10 max-w-2xl mx-auto"
+            className="text-lg text-gray-300/80"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            Centenas de fotógrafos já transformaram seus negócios com nossa plataforma.
-            Veja o que eles têm a dizer.
+            Tire suas dúvidas sobre o Fotoessence e descubra como nossa plataforma pode ajudar seu negócio de fotografia.
           </motion.p>
         </div>
 
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, staggerChildren: 0.1 }}
+          transition={{ duration: 0.5 }}
         >
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="h-full hover:shadow-lg transition-all duration-300 border-[#496A81]/20">
-                <CardContent className="pt-6">
-                  <div className="flex items-center mb-4">
-                    <Avatar className="h-12 w-12 mr-4 border-2 border-[#FFC857]">
-                      <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                      <AvatarFallback className="bg-[#FFC857]/20 text-[#FFC857]">
-                        {testimonial.avatar}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h4 className="font-semibold text-[#2B3A67]">{testimonial.name}</h4>
-                      <p className="text-sm text-[#4A4A4A]/60">{testimonial.role}</p>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#FFC857" className="inline-block mr-1">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="text-[#4A4A4A]/80 italic">"{testimonial.quote}"</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+          <Accordion type="single" collapsible className="bg-gray-800 border border-purple-500/20 rounded-lg shadow-xl">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} value={`item-${index}`} className="border-b border-purple-500/10 last:border-none">
+                <AccordionTrigger className="px-6 py-4 text-purple-400 font-medium text-left hover:bg-purple-500/10 hover:no-underline transition-colors">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-4 pt-1 text-gray-300">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </motion.div>
       </div>
     </section>
   );
 };
 
-export default Testimonials;
+export default FAQ;
