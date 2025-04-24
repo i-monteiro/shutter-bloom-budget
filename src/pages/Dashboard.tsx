@@ -1,36 +1,43 @@
-
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useBudgets } from "@/context/BudgetContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { StatCard } from "@/components/ui/stat-card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { MonthlyEvents } from "@/components/dashboard/MonthlyEvents";
 import { MonthlyRevenue } from "@/components/dashboard/MonthlyRevenue";
-import { Receipt, CalendarDays, Check, X, Camera } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  ArrowUpRight, Calendar, DollarSign, FilePlus, Users, Camera,
+  Award, Clock, Check, X, CalendarDays
+} from "lucide-react";
 
 const Dashboard = () => {
   const { budgets, isLoading } = useBudgets();
   const { userName } = useAuth();
+  const isMobile = useIsMobile();
 
-  // Calculate dashboard stats
   const stats = useMemo(() => {
     const totalBudgets = budgets.length;
     const sentProposals = budgets.filter(budget => budget.status === "sent").length;
     const acceptedProposals = budgets.filter(budget => budget.status === "accepted").length;
     const rejectedProposals = budgets.filter(budget => budget.status === "rejected").length;
-    
-    // Calculate total revenue from accepted proposals
+
     const totalRevenue = budgets
       .filter(budget => budget.status === "accepted")
       .reduce((total, budget) => total + (budget.amount || 0), 0);
-    
+
     return {
       totalBudgets,
       sentProposals,
       acceptedProposals,
       rejectedProposals,
-      totalRevenue: new Intl.NumberFormat('pt-BR', { 
-        style: 'currency', 
-        currency: 'BRL' 
+      totalRevenue: new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
       }).format(totalRevenue)
     };
   }, [budgets]);
@@ -53,26 +60,10 @@ const Dashboard = () => {
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard 
-          title="Total de Orçamentos" 
-          value={stats.totalBudgets} 
-          icon={<Camera className="h-5 w-5" />}
-        />
-        <StatCard 
-          title="Propostas Enviadas" 
-          value={stats.sentProposals} 
-          icon={<CalendarDays className="h-5 w-5" />}
-        />
-        <StatCard 
-          title="Sessões Confirmadas" 
-          value={stats.acceptedProposals}
-          icon={<Check className="h-5 w-5" />}
-        />
-        <StatCard 
-          title="Propostas Recusadas" 
-          value={stats.rejectedProposals}
-          icon={<X className="h-5 w-5" />}
-        />
+        <StatCard title="Total de Orçamentos" value={stats.totalBudgets} icon={<Camera className="h-5 w-5" />} />
+        <StatCard title="Propostas Enviadas" value={stats.sentProposals} icon={<CalendarDays className="h-5 w-5" />} />
+        <StatCard title="Sessões Confirmadas" value={stats.acceptedProposals} icon={<Check className="h-5 w-5" />} />
+        <StatCard title="Propostas Recusadas" value={stats.rejectedProposals} icon={<X className="h-5 w-5" />} />
       </div>
 
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
@@ -85,6 +76,10 @@ const Dashboard = () => {
           <p className="text-lg font-semibold">Faturamento Total: {stats.totalRevenue}</p>
         </div>
       </div>
+
+      <Separator className="bg-gray-800 my-8" />
+
+      {/* Aqui pode vir mais conteúdo se quiser expandir o dashboard */}
     </div>
   );
 };

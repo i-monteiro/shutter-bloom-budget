@@ -1,6 +1,4 @@
-
-/* Google Fonts para títulos sofisticados */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,87 +6,113 @@
 
 @layer base {
   :root {
-    --background: 225 10% 7%;
-    --foreground: 0 0% 98%;
+    /* Tema dark estilo Leonardo AI/Lovable */
+    --background: 240 10% 4%;     /* #09090D - fundo quase preto */
+    --foreground: 0 0% 95%;       /* #F2F2F2 - texto quase branco */
+    
+    --card: 240 10% 8%;           /* #111118 - card escuro */
+    --card-foreground: 0 0% 95%;  /* #F2F2F2 - texto de card */
+    
+    --popover: 240 10% 8%;        /* #111118 - popover escuro */
+    --popover-foreground: 0 0% 95%; /* #F2F2F2 - texto de popover */
+    
+    --primary: 267 80% 60%;       /* #8A2BE2 - roxo vibrante */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF - texto sobre roxo */
+    
+    --secondary: 240 25% 20%;     /* #1E1E2F - roxo escuro/cinza */
+    --secondary-foreground: 0 0% 98%; /* #FAFAFA - texto sobre secundário */
+    
+    --muted: 240 10% 12%;         /* #17171E - cinza escuro mudo */
+    --muted-foreground: 240 5% 65%; /* #A0A0B0 - texto mudo */
+    
+    --accent: 267 90% 65%;        /* #9333EA - roxo mais claro para destaque */
+    --accent-foreground: 0 0% 98%; /* #FAFAFA - texto sobre destaque */
+    
+    --destructive: 0 85% 60%;     /* #E53E3E - vermelho */
+    --destructive-foreground: 0 0% 98%; /* #FAFAFA - texto sobre vermelho */
+    
+    --border: 240 10% 15%;        /* #212130 - bordas escuras */
+    --input: 240 10% 15%;         /* #212130 - fundos de input */
+    
+    --ring: 267 80% 60%;          /* #8A2BE2 - roxo para rings/focus */
+    --radius: 0.5rem;
 
-    --card: 225 12% 10%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 225 12% 12%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 134 36% 53%; /* Verde suave, remete natureza/foto */
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 219 10% 18%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 216 5% 30%;
-    --muted-foreground: 240 4% 70%;
-
-    --accent: 274 58% 63%; /* Roxo artístico */
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 1 67% 58%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 10% 18%;
-    --input: 220 10% 24%;
-    --ring: 277 75% 84%;
-
-    --radius: 0.7rem;
-
-    /* Sidebar custom */
-    --sidebar-background: 225 14% 12%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 134 36% 53%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 274 58% 63%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 220 10% 18%;
-    --sidebar-ring: 277 75% 84%;
+    /* Cores personalizadas para Fotessence */
+    --purple-dark: 267 80% 40%;   /* #6B1BBB - roxo escuro */
+    --purple-light: 267 90% 70%;  /* #A855F7 - roxo claro */
+    --dark-gray: 240 10% 10%;     /* #13131D - cinza escuro */
+    --light-gray: 240 5% 75%;     /* #BABBCB - cinza claro */
+    --glow: 267 100% 70%;         /* #A020F0 - cor para efeitos de glow */
   }
+}
 
+@layer base {
   * {
     @apply border-border;
   }
 
-  html {
-    @apply scroll-smooth;
-    background: #181A20;
-  }
-
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Outfit', 'Playfair Display', serif;
-    background: linear-gradient(120deg, #181A20 60%, #282a38 100%);
-    min-height: 100vh;
-  }
-
-  /* Cards e glass effect */
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-white/10 backdrop-blur-xl border border-white/10;
-  }
-
-  .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4)];
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer components {
-  .status-pending {
-    @apply bg-accent/10 text-accent px-2 py-1 rounded-full text-xs font-medium;
+  .section-title {
+    @apply text-3xl md:text-4xl font-semibold text-white mb-6;
+  }
+  
+  .section-subtitle {
+    @apply text-xl text-gray-300/80 mb-10 max-w-2xl mx-auto;
+  }
+  
+  .section-container {
+    @apply max-w-7xl mx-auto px-6 py-16 md:py-24;
   }
 
-  .status-sent {
-    @apply bg-primary/20 text-primary px-2 py-1 rounded-full text-xs font-medium;
+  /* Efeitos de brilho e gradiente para elementos interativos */
+  .glow-effect {
+    box-shadow: 0 0 15px 2px rgba(168, 85, 247, 0.5);
   }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400;
+  }
+  
+  .gradient-bg {
+    @apply bg-gradient-to-r from-purple-700 to-purple-900;
+  }
+  
+  .glass-effect {
+    @apply bg-opacity-20 backdrop-blur-lg backdrop-filter;
+  }
+}
 
-  .status-accepted {
-    @apply bg-primary/30 text-primary px-2 py-1 rounded-full text-xs font-medium;
-  }
+/* Animações */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
 
-  .status-rejected {
-    @apply bg-destructive/30 text-destructive px-2 py-1 rounded-full text-xs font-medium;
-  }
+.float-animation {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.8); }
+}
+
+.glow-animation {
+  animation: glow 2s ease-in-out infinite;
 }

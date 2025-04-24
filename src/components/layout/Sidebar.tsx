@@ -1,112 +1,121 @@
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  Calendar,
+  Camera,
+  CreditCard,
+  FileText,
+  Home,
+  LayoutDashboard,
+  Menu,
+  Settings,
+  X
+} from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { 
-  CalendarDays, 
-  Home, 
-  Menu, 
-  Receipt, 
-  Settings, 
-  X,
-  LogOut 
-} from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-
-interface SidebarProps {
-  userName: string;
-}
-
-const Sidebar = ({ userName }: SidebarProps) => {
-  const [isOpen, setIsOpen] = useState(true);
+const Sidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { logout } = useAuth();
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = useState(false);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  const menuItems = [
-    { icon: Home, text: "Dashboard", path: "/" },
-    { icon: Receipt, text: "Orçamentos", path: "/budgets" },
-    { icon: CalendarDays, text: "Eventos", path: "/events" },
-    { icon: Settings, text: "Configurações", path: "/settings" },
-  ];
-
-  const handleLogout = () => {
-    logout();
+  const NavItem = ({ to, icon: Icon, label }) => {
+    const isActive = location.pathname === to;
+    
+    return (
+      <Link
+        to={to}
+        className={cn(
+          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+          isActive
+            ? "bg-purple-600/20 text-purple-400"
+            : "text-gray-400 hover:bg-gray-800/40 hover:text-purple-300"
+        )}
+        onClick={isMobile ? toggleSidebar : undefined}
+      >
+        <Icon className={cn("h-5 w-5", isActive ? "text-purple-400" : "text-gray-500")} />
+        <span>{label}</span>
+      </Link>
+    );
   };
 
   return (
     <>
-      {/* Mobile menu toggle */}
-      <button
-        className="fixed z-50 top-4 left-4 p-2 rounded-full bg-white shadow-md lg:hidden"
-        onClick={toggleSidebar}
-        aria-label="Toggle Menu"
-      >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
-
+      {/* Overlay para dispositivos móveis */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
+          onClick={toggleSidebar}
+        />
+      )}
+      
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out bg-white shadow-lg",
-          "lg:translate-x-0 lg:w-64",
-          isOpen ? "translate-x-0 w-64" : "-translate-x-full"
+          "fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-800 bg-gray-900/90 backdrop-blur-md transition-transform duration-300 ease-in-out",
+          isMobile && !isOpen && "-translate-x-full",
+          isMobile && isOpen && "translate-x-0",
+          !isMobile && "relative z-0 translate-x-0"
         )}
       >
-        <div className="flex flex-col h-full">
-          {/* Logo / Header */}
-          <div className="p-6 border-b">
-            <h1 className="text-2xl font-bold text-primary">Fotessence</h1>
-            <p className="text-sm text-gray-500">Gestão de Orçamentos</p>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
-            {menuItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={cn(
-                  "flex items-center w-full px-4 py-3 rounded-lg transition-colors",
-                  "hover:bg-primary-light/20",
-                  location.pathname === item.path 
-                    ? "bg-primary text-white" 
-                    : "text-gray-700"
-                )}
-              >
-                <item.icon className={cn("w-5 h-5 mr-3")} />
-                <span>{item.text}</span>
-              </button>
-            ))}
-          </nav>
-
-          {/* User info */}
-          <div className="p-4 border-t">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">{userName}</p>
-              <button 
-                onClick={handleLogout} 
-                className="text-gray-600 hover:text-primary transition-colors p-2 rounded-full hover:bg-gray-100"
-                title="Sair"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
+        {/* Cabeçalho do Sidebar */}
+        <div className="flex h-16 items-center justify-between border-b border-gray-800 px-4">
+          <Link to="/app/dashboard" className="flex items-center gap-2">
+            <div className="bg-purple-600/20 p-1.5 rounded-md">
+              <Camera className="h-5 w-5 text-purple-400" />
             </div>
-            <p className="text-sm text-gray-500 text-center mt-2">
-              © 2025 ShutterBloom
-            </p>
+            <span className="text-lg font-semibold text-white">Fotessence</span>
+          </Link>
+          
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleSidebar}
+              className="text-gray-400 hover:bg-gray-800"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
+        
+        {/* Links de navegação */}
+        <div className="space-y-1 px-3 py-4">
+          <NavItem to="/app/dashboard" icon={LayoutDashboard} label="Dashboard" />
+          <NavItem to="/app/budgets" icon={FileText} label="Orçamentos" />
+          <NavItem to="/app/events" icon={Calendar} label="Eventos" />
+          <NavItem to="/app/finances" icon={CreditCard} label="Finanças" />
+          <NavItem to="/app/settings" icon={Settings} label="Configurações" />
+        </div>
+        
+        {/* Rodapé do Sidebar */}
+        <div className="absolute bottom-0 w-full border-t border-gray-800 bg-gray-900/80 p-4">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-purple-600/20 flex items-center justify-center text-purple-400 font-medium">
+              {/* Exibir primeira letra do nome do usuário */}
+              U
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-400">Conectado como:</span>
+              <span className="text-sm font-medium text-white truncate max-w-[150px]">Usuário</span>
+            </div>
           </div>
         </div>
       </aside>
-
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+      
+      {/* Botão toggle para mobile */}
+      {isMobile && !isOpen && (
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={toggleSidebar}
-        />
+          className="fixed bottom-4 left-4 z-30 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
       )}
     </>
   );

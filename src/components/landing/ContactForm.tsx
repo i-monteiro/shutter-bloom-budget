@@ -1,0 +1,253 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import z from 'zod';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Camera, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const formSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  email: z.string().email("Email inválido"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+const ContactForm = () => {
+  const { toast } = useToast();
+  
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Falha ao enviar o formulário');
+      }
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sucesso!",
+        description: "Obrigado pelo seu interesse! Entraremos em contato em breve.",
+        duration: 5000,
+      });
+      form.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao enviar o formulário",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (values: FormValues) => {
+    mutation.mutate(values);
+  };
+
+  return (
+    <section id="contato" className="py-20 bg-gray-900 relative overflow-hidden">
+      {/* Efeitos de gradiente */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-700/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-40 -left-40 w-60 h-60 bg-purple-600/5 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="bg-gray-800/50 p-10 rounded-xl shadow-lg border border-gray-700 backdrop-blur-sm"
+          >
+            <div className="flex items-center mb-6">
+              <div className="bg-purple-600/20 p-3 rounded-full mr-4">
+                <Camera className="h-8 w-8 text-purple-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-white">Experimente Grátis</h3>
+            </div>
+            
+            <p className="text-gray-300 mb-8">
+              Teste todas as funcionalidades do Fotessence por 14 dias, sem compromisso e sem necessidade de cartão de crédito.
+            </p>
+            
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-200">Nome</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Seu nome completo" 
+                          {...field}
+                          className="bg-gray-900/50 border-gray-700 focus-visible:ring-purple-500 text-white"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-200">Email</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="seu@email.com" 
+                          type="email"
+                          {...field}
+                          className="bg-gray-900/50 border-gray-700 focus-visible:ring-purple-500 text-white"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-purple-600 text-white hover:bg-purple-700 py-6 text-lg group glow-animation"
+                  disabled={mutation.isPending}
+                >
+                  {mutation.isPending ? "Enviando..." : "Começar Teste Gratuito"}
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </form>
+            </Form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-400 mb-2">
+                Já possui uma conta?
+              </p>
+              <Link to="/login">
+                <Button 
+                  variant="outline" 
+                  className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10 w-full"
+                >
+                  Entrar na sua conta
+                </Button>
+              </Link>
+            </div>
+            
+            <p className="text-sm text-gray-500 text-center mt-4">
+              Ao se cadastrar, você concorda com nossos 
+              <br />
+              <a href="#" className="text-purple-400 underline hover:text-purple-300">
+                Termos de Serviço
+              </a> e <a href="#" className="text-purple-400 underline hover:text-purple-300">
+                Política de Privacidade
+              </a>
+            </p>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h3 className="text-2xl font-semibold text-white mb-6">Por Que Escolher o Fotessence?</h3>
+            
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="bg-purple-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">
+                  1
+                </div>
+                <p className="text-gray-300">
+                  <span className="font-semibold text-purple-400">Feito especificamente para fotógrafos</span> - Desenvolvido por fotógrafos que entendem as necessidades do seu negócio
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="bg-purple-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">
+                  2
+                </div>
+                <p className="text-gray-300">
+                  <span className="font-semibold text-purple-400">Tudo integrado em uma única plataforma</span> - Agenda, finanças, clientes e documentos em um só lugar
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="bg-purple-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">
+                  3
+                </div>
+                <p className="text-gray-300">
+                  <span className="font-semibold text-purple-400">Economize tempo com automações</span> - Emails automáticos, lembretes e fluxos de trabalho personalizados
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="bg-purple-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">
+                  4
+                </div>
+                <p className="text-gray-300">
+                  <span className="font-semibold text-purple-400">Aumente sua lucratividade</span> - Insights financeiros para tomar melhores decisões de negócio
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="bg-purple-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">
+                  5
+                </div>
+                <p className="text-gray-300">
+                  <span className="font-semibold text-purple-400">Suporte especializado</span> - Nossa equipe está sempre disponível para ajudar você a ter sucesso
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-8 p-4 bg-gray-800/40 rounded-lg border border-gray-700">
+              <h4 className="font-medium text-purple-400 mb-2">Mais de 1.000 fotógrafos já transformaram seus negócios</h4>
+              <div className="flex flex-wrap gap-2">
+                <div className="px-3 py-1 bg-gray-900/60 rounded-full text-sm text-gray-300">Fotografia de Casamento</div>
+                <div className="px-3 py-1 bg-gray-900/60 rounded-full text-sm text-gray-300">Retratos</div>
+                <div className="px-3 py-1 bg-gray-900/60 rounded-full text-sm text-gray-300">Newborn</div>
+                <div className="px-3 py-1 bg-gray-900/60 rounded-full text-sm text-gray-300">Produtos</div>
+                <div className="px-3 py-1 bg-gray-900/60 rounded-full text-sm text-gray-300">Eventos</div>
+                <div className="px-3 py-1 bg-gray-900/60 rounded-full text-sm text-gray-300">Arquitetura</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default ContactForm;

@@ -1,43 +1,58 @@
-
 import { useNavigate } from "react-router-dom";
 import { BudgetForm } from "@/components/budgets/BudgetForm";
 import { useBudgets } from "@/context/BudgetContext";
 import { BudgetFormData } from "@/types/budget";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { Card, CardContent } from "@/components/ui/card";
 
 const CreateBudget = () => {
   const navigate = useNavigate();
   const { addBudget } = useBudgets();
 
   const handleSubmit = (data: BudgetFormData) => {
-    // Normaliza todas as datas ao criar um novo orçamento
-    const normalizeDate = (date: Date | undefined): Date => {
-      if (!date) return new Date();
-      const normalizedDate = new Date(date);
-      normalizedDate.setHours(12, 0, 0, 0);
-      return normalizedDate;
-    };
+    if (!data.budgetDate || !data.eventDate) {
+      toast.error("Data do orçamento e data do evento são obrigatórias!");
+      return;
+    }
 
-    const normalizedData = {
-      ...data,
-      budgetDate: normalizeDate(data.budgetDate),
-      eventDate: normalizeDate(data.eventDate),
-      firstPaymentDate: data.firstPaymentDate ? normalizeDate(data.firstPaymentDate) : undefined,
-    };
+    toast.promise(
+      new Promise((resolve) => {
+        const normalizeDate = (date: Date | undefined): Date => {
+          if (!date) return new Date();
+          const normalizedDate = new Date(date);
+          normalizedDate.setHours(12, 0, 0, 0);
+          return normalizedDate;
+        };
 
-    addBudget(normalizedData);
-    navigate("/budgets");
+        const normalizedData = {
+          ...data,
+          budgetDate: normalizeDate(data.budgetDate),
+          eventDate: normalizeDate(data.eventDate),
+          firstPaymentDate: data.firstPaymentDate
+            ? normalizeDate(data.firstPaymentDate)
+            : undefined,
+        };
+
+        addBudget(normalizedData);
+        setTimeout(resolve, 600);
+      }),
+      {
+        loading: "Criando orçamento...",
+        success: () => {
+          navigate("/budgets");
+          return "Orçamento criado com sucesso!";
+        },
+        error: "Erro ao criar orçamento",
+      }
+    );
   };
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center gap-2">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => navigate("/budgets")}
-        >
+        <Button variant="ghost" size="icon" onClick={() => navigate("/budgets")}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
@@ -48,13 +63,15 @@ const CreateBudget = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6 md:p-8">
-        <BudgetForm 
-          onSubmit={handleSubmit} 
-          buttonText="Criar Orçamento" 
-          budgetStatus="pending"
-        />
-      </div>
+      <Card className="border-gray-800 bg-gray-900/50">
+        <CardContent className="p-6 md:p-8">
+          <BudgetForm 
+            onSubmit={handleSubmit} 
+            buttonText="Criar Orçamento" 
+            budgetStatus="pending"
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
