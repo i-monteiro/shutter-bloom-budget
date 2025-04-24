@@ -1,8 +1,7 @@
-
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Budget } from "@/types/budget";
-import { format, addMonths, getMonth, getYear, isSameMonth, isBefore } from "date-fns";
+import { format, addMonths, getMonth, getYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -13,92 +12,71 @@ interface MonthlyRevenueProps {
 export function MonthlyRevenue({ budgets }: MonthlyRevenueProps) {
   const chartData = useMemo(() => {
     const currentYear = getYear(new Date());
-    const acceptedBudgets = budgets.filter(
-      (budget) => budget.status === "accepted"
-    );
+    const accepted = budgets.filter(b => b.status === "accepted");
 
-    // Initialize data for all 12 months
-    const monthlyData = Array.from({ length: 12 }, (_, i) => ({
+    const data = Array.from({ length: 12 }, (_, i) => ({
       month: format(new Date(currentYear, i, 1), "MMM", { locale: ptBR }),
       revenue: 0,
     }));
 
-    // Calculate revenue per month based on installments
-    acceptedBudgets.forEach((budget) => {
-      if (!budget.amount) return; // Skip if there's no amount
-      
-      // If not installments, full amount on first payment date
-      if (!budget.installments) {
-        if (!budget.firstPaymentDate) return; // Skip if there's no payment date
-        
-        const paymentMonth = getMonth(budget.firstPaymentDate);
-        // Only count this year's revenue
-        if (getYear(budget.firstPaymentDate) === currentYear) {
-          monthlyData[paymentMonth].revenue += budget.amount;
-        }
+    accepted.forEach(b => {
+      if (!b.amount) return;
+
+      if (!b.installments) {
+        if (!b.firstPaymentDate) return;
+        if (getYear(b.firstPaymentDate) === currentYear)
+          data[getMonth(b.firstPaymentDate)].revenue += b.amount;
       } else {
-        // Calculate installment amount
-        if (!budget.installmentsCount || budget.installmentsCount <= 0 || !budget.firstPaymentDate) return;
-        
-        const installmentAmount = budget.amount / budget.installmentsCount;
-        
-        // Add each installment to the respective month
-        for (let i = 0; i < budget.installmentsCount; i++) {
-          const installmentDate = addMonths(budget.firstPaymentDate, i);
-          const installmentMonth = getMonth(installmentDate);
-          
-          // Only count this year's revenue
-          if (getYear(installmentDate) === currentYear) {
-            monthlyData[installmentMonth].revenue += installmentAmount;
-          }
+        if (!b.installmentsCount || !b.firstPaymentDate) return;
+        const parc = b.amount / b.installmentsCount;
+        for (let i = 0; i < b.installmentsCount; i++) {
+          const d = addMonths(b.firstPaymentDate, i);
+          if (getYear(d) === currentYear)
+            data[getMonth(d)].revenue += parc;
         }
       }
     });
 
-    // Format revenue to 2 decimal places
-    return monthlyData.map(item => ({
-      ...item,
-      revenue: Number(item.revenue.toFixed(2))
-    }));
+    return data.map(d => ({ ...d, revenue: Number(d.revenue.toFixed(2)) }));
   }, [budgets]);
 
   return (
-    <Card className="h-full card-hover">
+    <Card className="h-full border-gray-800 bg-gray-900/40 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-lg font-medium">Faturamento Mensal</CardTitle>
+        <CardTitle className="text-lg font-medium text-white">Faturamento Mensal</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
-            <XAxis 
-              dataKey="month" 
-              stroke="#888888" 
-              fontSize={12} 
-              tickLine={false} 
-              axisLine={false} 
-            />
-            <YAxis
-              stroke="#888888"
+            <XAxis
+              dataKey="month"
+              stroke="#9ca3af"
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `R$${value}`}
+            />
+            <YAxis
+              stroke="#9ca3af"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={v => `R$${v}`}
             />
             <Tooltip
-              contentStyle={{ 
-                background: 'white', 
-                border: '1px solid #eaeaea', 
-                borderRadius: '8px' 
+              contentStyle={{
+                background: "#111827",
+                border: "1px solid #374151",
+                borderRadius: 8,
               }}
-              formatter={(value) => [`R$ ${value}`, 'Faturamento']}
-              labelFormatter={(label) => `Mês: ${label}`}
+              formatter={v => [`R$ ${v}`, "Faturamento"]}
+              labelFormatter={l => `Mês: ${l}`}
             />
-            <Line 
-              type="monotone" 
-              dataKey="revenue" 
-              stroke="#67be9b" 
-              strokeWidth={2} 
-              dot={{ r: 4, fill: "#67be9b" }}
+            <Line
+              type="monotone"
+              dataKey="revenue"
+              stroke="#a855f7"         /* purple-500 */
+              strokeWidth={2}
+              dot={{ r: 4, fill: "#a855f7" }}
               activeDot={{ r: 6 }}
             />
           </LineChart>

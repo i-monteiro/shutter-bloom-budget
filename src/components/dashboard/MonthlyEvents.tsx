@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Budget } from "@/types/budget";
@@ -13,61 +12,57 @@ interface MonthlyEventsProps {
 export function MonthlyEvents({ budgets }: MonthlyEventsProps) {
   const chartData = useMemo(() => {
     const currentYear = getYear(new Date());
-    const acceptedBudgets = budgets.filter(
-      (budget) => budget.status === "accepted" && getYear(budget.eventDate) === currentYear
+    const accepted = budgets.filter(
+      b => b.status === "accepted" && getYear(b.eventDate) === currentYear
     );
 
-    // Initialize data for all 12 months
-    const monthlyData = Array.from({ length: 12 }, (_, i) => ({
+    const data = Array.from({ length: 12 }, (_, i) => ({
       month: format(new Date(currentYear, i, 1), "MMM", { locale: ptBR }),
       events: 0,
     }));
 
-    // Count events per month
-    acceptedBudgets.forEach((budget) => {
-      const month = getMonth(budget.eventDate);
-      monthlyData[month].events += 1;
+    accepted.forEach(b => {
+      data[getMonth(b.eventDate)].events += 1;
     });
 
-    return monthlyData;
+    return data;
   }, [budgets]);
 
   return (
-    <Card className="h-full card-hover">
+    <Card className="h-full border-gray-800 bg-gray-900/40 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-lg font-medium">Eventos por Mês</CardTitle>
+        <CardTitle className="text-lg font-medium text-white">Eventos por Mês</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
-            <XAxis 
-              dataKey="month" 
-              stroke="#888888" 
-              fontSize={12} 
-              tickLine={false} 
-              axisLine={false} 
-            />
-            <YAxis
-              stroke="#888888"
+            <XAxis
+              dataKey="month"
+              stroke="#9ca3af"
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `${value}`}
+            />
+            <YAxis
+              stroke="#9ca3af"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
             />
             <Tooltip
-              contentStyle={{ 
-                background: 'white', 
-                border: '1px solid #eaeaea', 
-                borderRadius: '8px' 
+              contentStyle={{
+                background: "#111827",
+                border: "1px solid #374151",
+                borderRadius: 8,
               }}
-              formatter={(value) => [`${value} eventos`, 'Eventos']}
-              labelFormatter={(label) => `Mês: ${label}`}
+              formatter={v => [`${v} eventos`, "Eventos"]}
+              labelFormatter={l => `Mês: ${l}`}
             />
-            <Bar 
-              dataKey="events" 
-              fill="#67be9b" 
-              radius={[4, 4, 0, 0]} 
-              barSize={40} 
+            <Bar
+              dataKey="events"
+              fill="#a855f7"           /* purple-500 */
+              radius={[4, 4, 0, 0]}
+              barSize={40}
             />
           </BarChart>
         </ResponsiveContainer>

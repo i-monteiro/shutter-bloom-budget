@@ -1,122 +1,92 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import {
-  Calendar,
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { X } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  FileText, 
+  Calendar, 
+  Settings, 
   Camera,
-  CreditCard,
-  FileText,
-  Home,
-  LayoutDashboard,
-  Menu,
-  Settings,
-  X
+  Users,
+  BarChart4,
+  MessageSquare,
+  HelpCircle
 } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
-const Sidebar = () => {
-  const location = useLocation();
-  const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = useState(false);
+interface SidebarProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
-
-  const NavItem = ({ to, icon: Icon, label }) => {
-    const isActive = location.pathname === to;
-    
-    return (
-      <Link
-        to={to}
-        className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
-          isActive
-            ? "bg-purple-600/20 text-purple-400"
-            : "text-gray-400 hover:bg-gray-800/40 hover:text-purple-300"
-        )}
-        onClick={isMobile ? toggleSidebar : undefined}
-      >
-        <Icon className={cn("h-5 w-5", isActive ? "text-purple-400" : "text-gray-500")} />
-        <span>{label}</span>
-      </Link>
-    );
-  };
-
+const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
+  const menuItems = [
+    { title: 'Dashboard', icon: LayoutDashboard, path: '/app/dashboard' },
+    { title: 'Orçamentos', icon: FileText, path: '/app/budgets' },
+    { title: 'Agenda', icon: Calendar, path: '/app/events' },
+    { title: 'Clientes', icon: Users, path: '/app/clients' },
+    { title: 'Relatórios', icon: BarChart4, path: '/app/reports' },
+    { title: 'Mensagens', icon: MessageSquare, path: '/app/messages' },
+    { title: 'Suporte', icon: HelpCircle, path: '/app/support' },
+    { title: 'Configurações', icon: Settings, path: '/app/settings' },
+  ];
+  
   return (
     <>
-      {/* Overlay para dispositivos móveis */}
-      {isMobile && isOpen && (
+      {/* Overlay para dispositivos móveis - fechar ao clicar fora da sidebar */}
+      {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm"
-          onClick={toggleSidebar}
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" 
+          onClick={() => setIsOpen(false)}
         />
       )}
       
       {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 border-r border-gray-800 bg-gray-900/90 backdrop-blur-md transition-transform duration-300 ease-in-out",
-          isMobile && !isOpen && "-translate-x-full",
-          isMobile && isOpen && "translate-x-0",
-          !isMobile && "relative z-0 translate-x-0"
-        )}
-      >
-        {/* Cabeçalho do Sidebar */}
-        <div className="flex h-16 items-center justify-between border-b border-gray-800 px-4">
-          <Link to="/app/dashboard" className="flex items-center gap-2">
-            <div className="bg-purple-600/20 p-1.5 rounded-md">
-              <Camera className="h-5 w-5 text-purple-400" />
-            </div>
-            <span className="text-lg font-semibold text-white">Fotessence</span>
-          </Link>
-          
-          {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={toggleSidebar}
-              className="text-gray-400 hover:bg-gray-800"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
+      <aside className={`
+        fixed top-0 left-0 z-40 w-64 h-full bg-gray-900/95 backdrop-blur border-r border-gray-800 
+        transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:z-0 
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {/* Botão de fechar para dispositivos móveis */}
+        <button 
+          className="absolute top-4 right-4 text-gray-400 hover:text-white md:hidden"
+          onClick={() => setIsOpen(false)}
+        >
+          <X size={24} />
+        </button>
         
-        {/* Links de navegação */}
-        <div className="space-y-1 px-3 py-4">
-          <NavItem to="/app/dashboard" icon={LayoutDashboard} label="Dashboard" />
-          <NavItem to="/app/budgets" icon={FileText} label="Orçamentos" />
-          <NavItem to="/app/events" icon={Calendar} label="Eventos" />
-          <NavItem to="/app/finances" icon={CreditCard} label="Finanças" />
-          <NavItem to="/app/settings" icon={Settings} label="Configurações" />
-        </div>
-        
-        {/* Rodapé do Sidebar */}
-        <div className="absolute bottom-0 w-full border-t border-gray-800 bg-gray-900/80 p-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-purple-600/20 flex items-center justify-center text-purple-400 font-medium">
-              {/* Exibir primeira letra do nome do usuário */}
-              U
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-400">Conectado como:</span>
-              <span className="text-sm font-medium text-white truncate max-w-[150px]">Usuário</span>
-            </div>
+        {/* Cabeçalho */}
+        <div className="flex items-center gap-3 p-6 border-b border-gray-800">
+          <div className="bg-purple-600/20 p-2 rounded-full">
+            <Camera className="h-6 w-6 text-purple-400" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">Fotessence</h2>
+            <p className="text-xs text-gray-400">Gerenciamento profissional</p>
           </div>
         </div>
+        
+        {/* Menu de navegação */}
+        <nav className="p-4">
+          <ul className="space-y-1">
+            {menuItems.map((item) => (
+              <li key={item.path}>
+                <NavLink 
+                  to={item.path}
+                  className={({ isActive }) => `
+                    flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                    ${isActive 
+                      ? 'bg-gray-800/70 text-white' 
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/40'}
+                  `}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.title}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </aside>
-      
-      {/* Botão toggle para mobile */}
-      {isMobile && !isOpen && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="fixed bottom-4 left-4 z-30 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-      )}
     </>
   );
 };
