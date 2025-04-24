@@ -72,8 +72,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserId(getUserId());
       
       toast.success('Login realizado com sucesso!');
-      navigate('/dashboard');
-    } catch (error) {
+      return navigate('/app/dashboard');
+  } catch (error) {
       console.error('Login error:', error);
       toast.error('Falha no login. Verifique suas credenciais.');
       throw error;

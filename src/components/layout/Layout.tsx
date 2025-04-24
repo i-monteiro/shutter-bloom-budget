@@ -1,18 +1,19 @@
-
 import { Outlet } from 'react-router-dom';
+import Topbar from './Topbar';
 import Sidebar from './Sidebar';
-import { useAuth } from '@/hooks/useAuth';
 
 const Layout = () => {
-  const { userName } = useAuth();
-  
   return (
-    <div className="min-h-screen flex flex-col">
-      <Sidebar userName={userName || 'Usuário'} />
-      
-      <main className="flex-1 p-6 lg:ml-64 pt-16 lg:pt-6">
-        <Outlet />
-      </main>
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col">
+      <Topbar /> {/* Topbar visível em todas as páginas */}
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-7xl">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 };

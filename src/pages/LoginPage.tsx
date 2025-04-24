@@ -1,94 +1,162 @@
 
-'use client';
-
-import { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Camera } from 'lucide-react';
+import { Camera, Eye, EyeOff } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { useState } from 'react';
+
+const loginSchema = z.object({
+  email: z.string().email('E-mail inválido'),
+  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login, isLoading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
+  const { login } = useAuth();
+  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+  
+  const onSubmit = async (data: LoginFormValues) => {
     try {
-      await login(email, password);
+      await login(data.email, data.password);
     } catch (error) {
-      setError('Credenciais inválidas');
+      toast({
+        variant: "destructive",
+        title: "Erro ao fazer login",
+        description: "Verifique seu e-mail e senha e tente novamente.",
+      });
     }
   };
-
+  
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary mb-4">
-            <Camera className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Photo Manager</h1>
-          <p className="text-gray-600 mt-2">Gerenciamento de orçamentos fotográficos</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full">
-          <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-          
-          {error && <p className="text-destructive mb-4 text-center">{error}</p>}
-
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Senha
-              </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="********"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary/90"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Entrando...' : 'Entrar'}
-            </Button>
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Não tem uma conta?{' '}
-              <Link to="/register" className="text-primary font-medium hover:underline">
-                Cadastre-se
-              </Link>
-            </p>
-          </div>
-        </form>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black p-4 relative overflow-hidden">
+      {/* Efeitos de gradiente de fundo */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-700/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-60 -left-20 w-60 h-60 bg-purple-600/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-20 w-40 h-40 bg-indigo-700/20 rounded-full blur-3xl"></div>
       </div>
+      
+      <Card className="w-full max-w-md border-gray-700 shadow-lg bg-gray-900/50 backdrop-blur-sm relative z-10">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-center mb-4">
+            <div className="flex flex-col items-center">
+              <div className="bg-purple-600/20 p-3 rounded-full mb-2">
+                <Camera className="h-10 w-10 text-purple-400" />
+              </div>
+              <h1 className="text-2xl font-bold text-white">Fotessence</h1>
+              <p className="text-sm text-gray-400 mt-1">Gerenciamento de orçamentos fotográficos</p>
+            </div>
+          </div>
+          <CardTitle className="text-xl font-semibold text-center text-white">
+            Login
+          </CardTitle>
+          <CardDescription className="text-center text-gray-400">
+            Digite suas credenciais para acessar o sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-200">E-mail</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="seu@email.com"
+                        {...field}
+                        className="bg-gray-800/50 border-gray-700 text-white focus-visible:ring-purple-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-200">Senha</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          {...field}
+                          className="bg-gray-800/50 border-gray-700 text-white focus-visible:ring-purple-500 pr-10"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full bg-purple-600 text-white hover:bg-purple-700 glow-animation"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? "Entrando..." : "Entrar"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="flex flex-col space-y-4">
+          <div className="text-center text-sm">
+            <Link to="/register" className="text-purple-400 hover:text-purple-300 hover:underline">
+              Não tem uma conta? Cadastre-se
+            </Link>
+          </div>
+          <div className="text-center text-xs text-gray-500">
+            Ao fazer login, você concorda com os nossos
+            <a href="#" className="text-purple-400 hover:underline"> Termos de Serviço </a>
+            e
+            <a href="#" className="text-purple-400 hover:underline"> Política de Privacidade</a>.
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

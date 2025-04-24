@@ -1,5 +1,5 @@
-
-import { Navigate, Outlet } from 'react-router-dom';
+// src/components/auth/PrivateRoute.tsx
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { ReactNode } from 'react';
 
@@ -8,25 +8,14 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
+    // Redirecionar para login se não estiver autenticado
     return <Navigate to="/login" replace />;
   }
 
-  if (children) {
-    return <>{children}</>;
-  }
-
-  return <Outlet />;
+  return <>{children}</>;
 };
 
 export default PrivateRoute;
