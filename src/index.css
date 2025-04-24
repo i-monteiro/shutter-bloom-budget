@@ -1,49 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    /* Tema dark estilo Leonardo AI/Lovable */
-    --background: 240 10% 4%;     /* #09090D - fundo quase preto */
-    --foreground: 0 0% 95%;       /* #F2F2F2 - texto quase branco */
-    
-    --card: 240 10% 8%;           /* #111118 - card escuro */
-    --card-foreground: 0 0% 95%;  /* #F2F2F2 - texto de card */
-    
-    --popover: 240 10% 8%;        /* #111118 - popover escuro */
-    --popover-foreground: 0 0% 95%; /* #F2F2F2 - texto de popover */
-    
-    --primary: 267 80% 60%;       /* #8A2BE2 - roxo vibrante */
-    --primary-foreground: 0 0% 100%; /* #FFFFFF - texto sobre roxo */
-    
-    --secondary: 240 25% 20%;     /* #1E1E2F - roxo escuro/cinza */
-    --secondary-foreground: 0 0% 98%; /* #FAFAFA - texto sobre secundário */
-    
-    --muted: 240 10% 12%;         /* #17171E - cinza escuro mudo */
-    --muted-foreground: 240 5% 65%; /* #A0A0B0 - texto mudo */
-    
-    --accent: 267 90% 65%;        /* #9333EA - roxo mais claro para destaque */
-    --accent-foreground: 0 0% 98%; /* #FAFAFA - texto sobre destaque */
-    
-    --destructive: 0 85% 60%;     /* #E53E3E - vermelho */
-    --destructive-foreground: 0 0% 98%; /* #FAFAFA - texto sobre vermelho */
-    
-    --border: 240 10% 15%;        /* #212130 - bordas escuras */
-    --input: 240 10% 15%;         /* #212130 - fundos de input */
-    
-    --ring: 267 80% 60%;          /* #8A2BE2 - roxo para rings/focus */
-    --radius: 0.5rem;
-
-    /* Cores personalizadas para Fotessence */
-    --purple-dark: 267 80% 40%;   /* #6B1BBB - roxo escuro */
-    --purple-light: 267 90% 70%;  /* #A855F7 - roxo claro */
-    --dark-gray: 240 10% 10%;     /* #13131D - cinza escuro */
-    --light-gray: 240 5% 75%;     /* #BABBCB - cinza claro */
-    --glow: 267 100% 70%;         /* #A020F0 - cor para efeitos de glow */
-  }
+:root {
+  --background: 240 10% 3.9%;       /* #0a0a0c - quase preto */
+  --foreground: 0 0% 98%;           /* #fafafa - branco off */
+  
+  --card: 240 10% 3.9%;             /* Mesmo que background */
+  --card-foreground: 0 0% 98%;      /* Mesmo que foreground */
+  
+  --popover: 240 10% 3.9%;          /* Mesmo que background */
+  --popover-foreground: 0 0% 98%;   /* Mesmo que foreground */
+  
+  --primary: 267 75% 40%;           /* #8A2BE2 - roxo vibrante */
+  --primary-foreground: 0 0% 98%;   /* #fafafa - branco off */
+  
+  --secondary: 240 4% 16%;          /* #24242b - cinza escuro */
+  --secondary-foreground: 0 0% 98%; /* #fafafa - branco off */
+  
+  --muted: 240 4% 16%;              /* #24242b - cinza escuro */
+  --muted-foreground: 240 5% 65%;   /* #a0a0b0 - cinza claro */
+  
+  --accent: 267 75% 40%;            /* #8A2BE2 - roxo vibrante */
+  --accent-foreground: 0 0% 98%;    /* #fafafa - branco off */
+  
+  --destructive: 0 63% 31%;         /* #9f1d1d - vermelho escuro */
+  --destructive-foreground: 0 0% 98%; /* #fafafa - branco off */
+  
+  --border: 240 5% 26%;             /* #3a3a45 - cinza médio escuro */
+  --input: 240 5% 26%;              /* #3a3a45 - cinza médio escuro */
+  --ring: 267 75% 40%;              /* #8A2BE2 - roxo vibrante */
+  
+  --radius: 0.5rem;
+  
+  /* Custom colors for the project */
+  --darkbg: 240 10% 3.9%;           /* #0a0a0c - quase preto */
+  --darkbg-subtle: 240 7% 8%;       /* #121218 - preto acinzentado */
+  --purple: 267 75% 40%;            /* #8A2BE2 - roxo vibrante */
+  --purple-light: 267 75% 50%;      /* #9d42fa - roxo mais claro */
+  --purple-dark: 267 75% 30%;       /* #661eb3 - roxo mais escuro */
+  --purple-bg: 267 75% 5%;          /* #100a18 - roxo super escuro (para fundos) */
 }
 
 @layer base {
@@ -52,8 +48,78 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply font-sans antialiased bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background: linear-gradient(to bottom, #0a0a0c, #0e0e14);
+  }
+  
+  /* Personalização dos inputs */
+  input, textarea, select {
+    @apply bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus-visible:ring-purple-500;
+  }
+  
+  /* Estilização do calendário */
+  .rdp {
+    --rdp-accent-color: theme('colors.purple.600');
+    --rdp-background-color: theme('colors.purple.900');
+    --rdp-accent-color-dark: theme('colors.purple.500');
+    --rdp-background-color-dark: theme('colors.purple.800');
+    --rdp-outline: 2px solid var(--rdp-accent-color);
+    --rdp-outline-selected: 2px solid var(--rdp-accent-color);
+  }
+
+  .rdp-day_selected, 
+  .rdp-day_selected:focus-visible, 
+  .rdp-day_selected:hover {
+    color: white;
+    background-color: var(--rdp-accent-color);
+  }
+
+  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+    background-color: theme('colors.gray.800');
+  }
+
+  .rdp-months {
+    background-color: theme('colors.gray.800');
+  }
+
+  .rdp-caption {
+    color: theme('colors.white');
+  }
+
+  .rdp-head_cell {
+    color: theme('colors.gray.400');
+  }
+
+  .rdp-day {
+    color: theme('colors.gray.300');
+  }
+
+  .rdp-day_disabled {
+    color: theme('colors.gray.600');
+  }
+
+  .rdp-nav_button:hover {
+    background-color: theme('colors.gray.700');
+  }
+  
+  /* Personalização da scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: theme('colors.gray.900');
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: theme('colors.gray.700');
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.gray.600');
   }
 }
 
@@ -63,32 +129,50 @@
   }
   
   .section-subtitle {
-    @apply text-xl text-gray-300/80 mb-10 max-w-2xl mx-auto;
+    @apply text-xl text-gray-400 mb-10 max-w-2xl mx-auto;
   }
   
   .section-container {
     @apply max-w-7xl mx-auto px-6 py-16 md:py-24;
   }
-
-  /* Efeitos de brilho e gradiente para elementos interativos */
-  .glow-effect {
-    box-shadow: 0 0 15px 2px rgba(168, 85, 247, 0.5);
+  
+  /* Cards para Dashboard */
+  .dashboard-card {
+    @apply border-gray-800 bg-gray-900/50 backdrop-blur-sm hover:bg-gray-800/60 transition-colors;
   }
   
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400;
+  /* Status badges para orçamentos */
+  .status-pending {
+    @apply bg-yellow-500/20 text-yellow-500;
   }
   
-  .gradient-bg {
-    @apply bg-gradient-to-r from-purple-700 to-purple-900;
+  .status-sent {
+    @apply bg-blue-500/20 text-blue-500;
   }
   
-  .glass-effect {
-    @apply bg-opacity-20 backdrop-blur-lg backdrop-filter;
+  .status-accepted {
+    @apply bg-green-500/20 text-green-500;
+  }
+  
+  .status-rejected {
+    @apply bg-red-500/20 text-red-500;
+  }
+  
+  /* Button modifiers */
+  .btn-primary {
+    @apply bg-purple-600 hover:bg-purple-700 text-white glow-animation;
+  }
+  
+  .btn-outline {
+    @apply border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-purple-400;
+  }
+  
+  .btn-destructive {
+    @apply bg-red-900/40 hover:bg-red-800/60 border border-red-800/40 text-red-300;
   }
 }
 
-/* Animações */
+/* Animations */
 @keyframes float {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -108,11 +192,21 @@
   animation: fadeIn 0.6s ease-out forwards;
 }
 
-@keyframes glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.8); }
+/* Efeito de brilho para botões */
+.glow-animation {
+  transition: box-shadow 0.3s ease;
 }
 
-.glow-animation {
-  animation: glow 2s ease-in-out infinite;
+.glow-animation:hover {
+  box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+}
+
+/* Efeito de vidro (glass) */
+.glass-effect {
+  @apply backdrop-blur-sm bg-gray-900/30 border border-gray-800;
+}
+
+/* Cartões com gradiente de fundo */
+.gradient-card {
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(30, 30, 36, 0.4) 100%);
 }
