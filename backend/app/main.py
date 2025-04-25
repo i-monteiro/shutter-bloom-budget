@@ -75,3 +75,16 @@ app.include_router(events.router, prefix="/api")
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from fastapi import Depends
+
+@app.get("/test-db")
+def test_db(db: Session = Depends(get_db)):
+    try:
+        db.execute("SELECT 1")  # consulta simples
+        return {"status": "Conexão com banco funcionando! 🎉"}
+    except Exception as e:
+        return {"status": "Erro na conexão com o banco", "detail": str(e)}
+

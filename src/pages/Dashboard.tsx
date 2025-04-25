@@ -98,13 +98,13 @@ const Dashboard = () => {
 
   // listas
   const recentBudgets = [...budgets]
-    .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt))
-    .slice(0, 5);
+    .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+    .slice(0, 3);
 
   const upcomingEvents = budgets
     .filter(b => b.status === "accepted" && b.eventDate)
     .sort((a, b) => +new Date(a.eventDate) - +new Date(b.eventDate))
-    .slice(0, 5);
+    .slice(0, 3);
 
   if (isLoading) {
     return (

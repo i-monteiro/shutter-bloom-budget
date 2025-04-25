@@ -23,10 +23,10 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
     { title: 'Dashboard', icon: LayoutDashboard, path: '/app/dashboard' },
     { title: 'Orçamentos', icon: FileText, path: '/app/budgets' },
     { title: 'Agenda', icon: Calendar, path: '/app/events' },
-    { title: 'Clientes', icon: Users, path: '/app/clients' },
-    { title: 'Relatórios', icon: BarChart4, path: '/app/reports' },
-    { title: 'Mensagens', icon: MessageSquare, path: '/app/messages' },
-    { title: 'Suporte', icon: HelpCircle, path: '/app/support' },
+    // { title: 'Clientes', icon: Users, path: '/app/clients' },
+    // { title: 'Relatórios', icon: BarChart4, path: '/app/reports' },
+    // { title: 'Mensagens', icon: MessageSquare, path: '/app/messages' },
+    // { title: 'Suporte', icon: HelpCircle, path: '/app/support' },
     { title: 'Configurações', icon: Settings, path: '/app/settings' },
   ];
   
