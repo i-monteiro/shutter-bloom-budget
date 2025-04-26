@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -14,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Listar eventos com paginação
 @router.get("/events/", response_model=List[EventOut])
 def list_events(
     request: Request,
@@ -22,16 +22,15 @@ def list_events(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100)
 ):
-    # Logging com informações de paginação e ID do usuário
     logger.info(f"User {current_user.id} requested events. Skip: {skip}, Limit: {limit}")
-    
-    # Query usando ORM para prevenir SQL injection
+
     events = db.query(Event).filter(
         Event.user_id == current_user.id
     ).offset(skip).limit(limit).all()
-    
+
     return events
 
+# Criar evento
 @router.post("/events/", response_model=EventOut, status_code=status.HTTP_201_CREATED)
 def create_event(
     request: Request,
@@ -39,14 +38,12 @@ def create_event(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Validação adicional para datas
     if event_data.dataEvento < date.today():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A data do evento não pode ser no passado"
         )
-    
-    # Criação segura usando ORM
+
     new_event = Event(
         nomeCliente=event_data.nomeCliente,
         tipoEvento=event_data.tipoEvento,
@@ -76,66 +73,62 @@ def create_event(
             detail="Erro ao criar evento"
         )
 
+# Buscar evento por ID
 @router.get("/events/{event_id}", response_model=EventOut)
 def get_event(
-    event_id: int, 
+    event_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Query usando ORM com verificação de propriedade
     ev = db.query(Event).filter(
         Event.id == event_id,
         Event.user_id == current_user.id
     ).first()
-    
+
     if not ev:
         raise HTTPException(status_code=404, detail="Evento não encontrado")
     return ev
 
+# Atualizar evento
 @router.patch("/events/{event_id}", response_model=EventOut)
 def update_event(
-    event_id: int, 
-    updates: EventUpdate, 
+    event_id: int,
+    updates: EventUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Verificação de propriedade do evento
     db_event = db.query(Event).filter(
         Event.id == event_id,
         Event.user_id == current_user.id
     ).first()
-    
+
     if not db_event:
         raise HTTPException(status_code=404, detail="Evento não encontrado")
 
-    # 🔧 Garante que 'status' esteja presente para a validação condicional
     update_data = updates.dict(exclude_unset=True)
     if "status" not in update_data:
         update_data["status"] = db_event.status.value
 
-    # 🧠 Revalida usando o schema com status garantido
     validated = EventUpdate(**update_data)
 
-    # Validações de negócio
     if validated.status == "proposta_enviada" and not validated.valorEvento:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Valor do evento é obrigatório para propostas enviadas"
         )
-    
+
     if validated.status == "proposta_aceita" and not validated.dataPrimeiroPagamento:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Data do primeiro pagamento é obrigatória para propostas aceitas"
         )
-    
+
     if validated.status == "proposta_recusada" and not validated.motivoRecusa:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Motivo da recusa é obrigatório para propostas recusadas"
         )
 
-    # Atualização segura
     for key, value in validated.dict(exclude_unset=True).items():
         setattr(db_event, key, value)
 
@@ -152,21 +145,21 @@ def update_event(
             detail="Erro ao atualizar evento"
         )
 
+# Deletar evento
 @router.delete("/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_event(
-    event_id: int, 
+    event_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Verificação de propriedade
     db_event = db.query(Event).filter(
         Event.id == event_id,
         Event.user_id == current_user.id
     ).first()
-    
+
     if not db_event:
         raise HTTPException(status_code=404, detail="Evento não encontrado")
-    
+
     try:
         db.delete(db_event)
         db.commit()
