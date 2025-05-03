@@ -72,9 +72,14 @@ export default function LoginPage() {
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
             <div className="flex flex-col items-center">
-              <div className="bg-purple-600/20 p-3 rounded-full mb-2">
-                <Camera className="h-10 w-10 text-purple-400" />
-              </div>
+            <div className="bg-purple-600/20 p-3 rounded-full mb-2">
+  <img 
+    src="/logo.png" 
+    alt="Logo Fotessence" 
+    className="h-13 w-12 object-contain rounded-full" 
+  />
+</div>
+
               <h1 className="text-2xl font-bold text-white">Fotessence</h1>
               <p className="text-sm text-gray-400 mt-1">Gerenciamento de orçamentos fotográficos</p>
             </div>

@@ -4,7 +4,7 @@ import Hero from '@/components/landing/Hero';
 import Features from '@/components/landing/Features';
 import Dashboard from '@/components/landing/DashboardSection';
 import CalendarSection from '@/components/landing/CalendarSection';
-import Testimonials from '@/components/landing/Testimonials';
+// import Testimonials from '@/components/landing/Testimonials';
 import FAQ from '@/components/landing/FAQ';
 import ContactForm from '@/components/landing/ContactForm';
 import Footer from '@/components/landing/Footer';
@@ -18,7 +18,7 @@ export default function LandingPage() {
         <Features />
         <Dashboard />
         <CalendarSection />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <FAQ />
         <ContactForm />
       </main>

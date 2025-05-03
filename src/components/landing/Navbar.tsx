@@ -43,7 +43,7 @@ const Navbar = () => {
             { label: 'Recursos', id: 'recursos' },
             { label: 'Dashboard', id: 'dashboard' },
             { label: 'Agenda', id: 'agenda' },
-            { label: 'Depoimentos', id: 'depoimentos' },
+            // { label: 'Depoimentos', id: 'depoimentos' },
             { label: 'FAQ', id: 'faq' },
           ].map(({ label, id }) => (
             <button
