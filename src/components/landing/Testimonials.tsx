@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Testimonials = () => {
   const testimonials = [
@@ -29,11 +29,11 @@ const Testimonials = () => {
   ];
 
   return (
-    <section id="depoimentos" className="py-20 bg-white">
+    <section id="depoimentos" className="py-20 bg-gradient-to-b from-gray-900 to-black">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <motion.h2 
-            className="text-3xl md:text-4xl font-semibold text-[#2B3A67] mb-6"
+            className="text-4xl font-bold text-white mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -42,7 +42,7 @@ const Testimonials = () => {
             O Que Dizem Nossos Clientes
           </motion.h2>
           <motion.p 
-            className="text-xl text-[#4A4A4A]/80 mb-10 max-w-2xl mx-auto"
+            className="text-lg text-gray-300/80"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -68,18 +68,18 @@ const Testimonials = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <Card className="h-full hover:shadow-lg transition-all duration-300 border-[#496A81]/20">
-                <CardContent className="pt-6">
+              <Card className="h-full bg-gray-800 hover:shadow-xl border border-purple-500/20 transition-shadow duration-300">
+                <CardContent className="pt-6 text-gray-300">
                   <div className="flex items-center mb-4">
-                    <Avatar className="h-12 w-12 mr-4 border-2 border-[#FFC857]">
+                    <Avatar className="h-12 w-12 mr-4 border-2 border-purple-500">
                       <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                      <AvatarFallback className="bg-[#FFC857]/20 text-[#FFC857]">
+                      <AvatarFallback className="bg-purple-500/10 text-purple-400">
                         {testimonial.avatar}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h4 className="font-semibold text-[#2B3A67]">{testimonial.name}</h4>
-                      <p className="text-sm text-[#4A4A4A]/60">{testimonial.role}</p>
+                      <h4 className="font-semibold text-white">{testimonial.name}</h4>
+                      <p className="text-sm text-gray-400">{testimonial.role}</p>
                     </div>
                   </div>
                   <div className="mb-4">
@@ -89,7 +89,7 @@ const Testimonials = () => {
                       </svg>
                     ))}
                   </div>
-                  <p className="text-[#4A4A4A]/80 italic">"{testimonial.quote}"</p>
+                  <p className="text-gray-300/90 italic">"{testimonial.quote}"</p>
                 </CardContent>
               </Card>
             </motion.div>

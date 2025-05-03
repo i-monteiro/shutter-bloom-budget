@@ -233,7 +233,7 @@ const ContactForm = () => {
             </div>
             
             <div className="mt-8 p-4 bg-gray-800/40 rounded-lg border border-gray-700">
-              <h4 className="font-medium text-purple-400 mb-2">Mais de 1.000 fotógrafos já transformaram seus negócios</h4>
+              <h4 className="font-medium text-purple-400 mb-2">Venha transformar seus negócios</h4>
               <div className="flex flex-wrap gap-2">
                 <div className="px-3 py-1 bg-gray-900/60 rounded-full text-sm text-gray-300">Fotografia de Casamento</div>
                 <div className="px-3 py-1 bg-gray-900/60 rounded-full text-sm text-gray-300">Retratos</div>

@@ -1,9 +1,8 @@
-
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from app.core.database import SessionLocal
+from app.core.database import get_db
 from app.models.models import User, RefreshToken
 from app.schemas.user import UserCreate, UserLogin, TokenResponse
 from app.auth.auth_handler import create_access_token, get_current_user
@@ -20,14 +19,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # Configurações de tokens
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 7
-
-# Conexão com banco
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 # Validação de senha
 def validate_password(password: str) -> bool:

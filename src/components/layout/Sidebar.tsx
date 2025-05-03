@@ -23,10 +23,10 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
     { title: 'Dashboard', icon: LayoutDashboard, path: '/app/dashboard' },
     { title: 'Orçamentos', icon: FileText, path: '/app/budgets' },
     { title: 'Agenda', icon: Calendar, path: '/app/events' },
-    { title: 'Clientes', icon: Users, path: '/app/clients' },
-    { title: 'Relatórios', icon: BarChart4, path: '/app/reports' },
-    { title: 'Mensagens', icon: MessageSquare, path: '/app/messages' },
-    { title: 'Suporte', icon: HelpCircle, path: '/app/support' },
+    // { title: 'Clientes', icon: Users, path: '/app/clients' },
+    // { title: 'Relatórios', icon: BarChart4, path: '/app/reports' },
+    // { title: 'Mensagens', icon: MessageSquare, path: '/app/messages' },
+    // { title: 'Suporte', icon: HelpCircle, path: '/app/support' },
     { title: 'Configurações', icon: Settings, path: '/app/settings' },
   ];
   
@@ -56,9 +56,14 @@ const Sidebar = ({ isOpen, setIsOpen }: SidebarProps) => {
         
         {/* Cabeçalho */}
         <div className="flex items-center gap-3 p-6 border-b border-gray-800">
-          <div className="bg-purple-600/20 p-2 rounded-full">
-            <Camera className="h-6 w-6 text-purple-400" />
-          </div>
+        <div className="bg-purple-600/20 p-2 rounded-full">
+  <img
+    src="/logo.png"
+    alt="Logo Fotessence"
+    className="h-15 w-15 object-cover rounded-full"
+  />
+</div>
+
           <div>
             <h2 className="text-xl font-bold text-white">Fotessence</h2>
             <p className="text-xs text-gray-400">Gerenciamento profissional</p>

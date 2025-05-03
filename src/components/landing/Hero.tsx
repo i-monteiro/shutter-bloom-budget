@@ -1,8 +1,7 @@
 import React from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { ChevronRight, LogIn, Camera } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 const Hero = () => {
   const scrollToContactForm = () => {
@@ -13,29 +12,32 @@ const Hero = () => {
   };
 
   return (
-    <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-gradient-to-b from-gray-900 to-black overflow-hidden relative">
-      {/* Efeito de partículas ou círculos de gradiente */}
-      <div className="absolute inset-0 overflow-hidden">
+    <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-gradient-to-b from-gray-900 to-black relative overflow-hidden">
+      
+      {/* Efeitos de partículas */}
+      <div className="absolute inset-0 overflow-hidden z-0">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-700/20 rounded-full blur-3xl"></div>
         <div className="absolute top-60 -left-20 w-60 h-60 bg-purple-600/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-20 w-40 h-40 bg-indigo-700/20 rounded-full blur-3xl"></div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* Badge lançamento */}
           <div className="mb-6 inline-block">
             <div className="flex items-center px-3 py-1 text-xs font-medium border border-purple-500/30 rounded-full bg-purple-500/10 text-purple-400 backdrop-blur-sm">
               <span className="flex h-2 w-2 rounded-full bg-purple-500 mr-2"></span>
               Lançamento Beta 2024
             </div>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            Transforme seu Negócio de <span className="gradient-text">Fotografia</span>
+            Simplifique a gestão do seu negócio de <span className="gradient-text">fotografia</span>
           </h1>
           <p className="text-xl text-gray-300/90 mb-8 md:pr-12">
             A plataforma completa para fotógrafos profissionais gerenciarem finanças, agenda e clientes em um só lugar.
@@ -45,24 +47,21 @@ const Hero = () => {
             <Button 
               onClick={scrollToContactForm}
               size="lg" 
-              className="bg-purple-600 text-white hover:bg-purple-700 text-lg glow-animation group"
+              className="bg-purple-600 text-white hover:bg-purple-700 text-lg group"
             >
               Experimente Grátis por 14 Dias
               <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
-            
-            <Link to="/login" className="sm:ml-4">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="border-purple-500/50 text-purple-400 hover:bg-purple-500/10 text-lg w-full sm:w-auto"
-              >
-                <LogIn className="mr-2 h-5 w-5" />
-                Já tem uma conta? Entrar
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-purple-500/50 text-purple-400 hover:bg-purple-500/10 text-lg"
+              onClick={() => document.getElementById('recursos')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Conheça os Recursos
+            </Button>
           </div>
-          
+
           <p className="mt-4 text-sm text-gray-400">
             Sem necessidade de cartão de crédito • Cancele quando quiser
           </p>
@@ -74,7 +73,7 @@ const Hero = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="relative"
         >
-          <div className="rounded-xl overflow-hidden shadow-2xl border border-purple-500/20 backdrop-blur-sm glass-effect">
+          <div className="rounded-xl overflow-hidden shadow-2xl border border-purple-500/20 backdrop-blur-sm">
             <img 
               src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" 
               alt="Fotógrafo profissional trabalhando com cliente" 
@@ -82,38 +81,24 @@ const Hero = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent rounded-xl"></div>
           </div>
-          
+
+          {/* Card flutuante */}
           <motion.div 
-            className="absolute -bottom-6 -left-6 bg-gray-900/90 p-4 rounded-lg shadow-lg border border-purple-500/30 backdrop-blur-md glow-effect"
+            className="absolute -bottom-6 -left-6 bg-gray-900/90 p-4 rounded-lg shadow-lg border border-purple-500/30 backdrop-blur-md"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-600/20 rounded-full flex items-center justify-center">
-                <Camera className="h-6 w-6 text-purple-400" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="none" className="text-purple-400">
+                  <path d="M12 20v-6M6 20V10M18 20V4" />
+                </svg>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-300">Aumento médio de</p>
-                <p className="text-xl font-bold text-purple-400">42% na receita</p>
+                <p className="text-sm font-medium text-gray-300">Tenha mais controle</p>
+                <p className="text-xl font-bold text-purple-400">da sua receita</p>
               </div>
-            </div>
-          </motion.div>
-          
-          {/* Badge flutuante */}
-          <motion.div 
-            className="absolute -top-2 -right-2 bg-gray-900/90 px-3 py-2 rounded-lg shadow-lg border border-purple-500/30 backdrop-blur-md"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-1">
-                <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-xs text-white font-bold">
-                  1k+
-                </div>
-              </div>
-              <p className="text-sm font-medium text-gray-300">Fotógrafos já confiam</p>
             </div>
           </motion.div>
         </motion.div>
