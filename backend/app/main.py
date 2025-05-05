@@ -24,7 +24,7 @@ origins = [
     "http://127.0.0.1:8000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://api-backend.fumwn4.easypanel.host"
+    "https://fotessence.automacaomachine.com.br",  # 👈 produção"
 ]
 
 app.add_middleware(
@@ -37,7 +37,12 @@ app.add_middleware(
 )
 
 # Configura Trusted Hosts
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "fotessence.automacaomachine.com.br",
+    "*.fumwn4.easypanel.host"
+]
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 
 # Security headers middleware
