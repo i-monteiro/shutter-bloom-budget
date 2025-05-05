@@ -16,7 +16,7 @@ export default function CadastroPage() {
     setMensagem('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/', {
+      const response = await fetch('https://api-backend.fumwn4.easypanel.host/api/users/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

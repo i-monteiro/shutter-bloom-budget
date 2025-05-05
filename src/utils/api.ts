@@ -1,7 +1,7 @@
 
 import { getToken, isAuthenticated } from './auth';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = 'https://api-backend.fumwn4.easypanel.host/api';
 
 interface RequestOptions extends RequestInit {
   authenticated?: boolean;
