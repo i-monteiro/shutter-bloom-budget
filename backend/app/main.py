@@ -14,7 +14,7 @@ load_dotenv()
 
 app = FastAPI()
 
-# Configura CORS
+# ✅ CORS deve vir primeiro!
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -24,7 +24,7 @@ origins = [
     "http://127.0.0.1:8000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://fotessence.automacaomachine.com.br",  # 👈 produção"
+    "https://fotessence.automacaomachine.com.br",
 ]
 
 app.add_middleware(
@@ -33,10 +33,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
-# Configura Trusted Hosts
+# ✅ Trusted Hosts
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
@@ -45,47 +44,41 @@ ALLOWED_HOSTS = [
 ]
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
 
-# Security headers middleware
+# ✅ Middleware de segurança (vem depois do CORS!)
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Content-Security-Policy"] = (
-    "default-src 'self'; "
-    "connect-src 'self'; "
-    "img-src 'self' data: https://fastapi.tiangolo.com; "
-    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;"
-)
+            "default-src 'self'; "
+            "connect-src *; "  # 👈 permitir seu frontend e backend
+            "img-src 'self' data: https://fastapi.tiangolo.com; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;"
+        )
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         return response
 
 app.add_middleware(SecurityHeadersMiddleware)
 
-# Cria tabelas no banco se não existirem
+# Criação das tabelas
 Base.metadata.create_all(bind=engine)
 
-# Handler global de erros
+# Rotas e health
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     print(f"Erro global capturado: {exc}")
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"}
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
-# Rotas
 app.include_router(users.router, prefix="/api")
 app.include_router(events.router, prefix="/api")
 
-# Health check
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
 
-# Teste de conexão
 @app.get("/test-db")
 def test_db(db: Session = Depends(get_db)):
     try:
