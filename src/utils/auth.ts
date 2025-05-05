@@ -81,7 +81,7 @@ export const isAuthenticated = () => {
 // Função assíncrona para renovar o token sem bloquear a UI
 const refreshTokenAsync = async () => {
   try {
-    const response = await fetch('http://localhost:8000/api/refresh-token', {
+    const response = await fetch('https://api-backend.fumwn4.easypanel.host/api/refresh-token', {
       method: 'POST',
       credentials: 'include',  // Importante para enviar cookies
       headers: {

@@ -20,8 +20,11 @@ origins = [
     "http://127.0.0.1:3000",
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://api-backend.fumwn4.easypanel.host"
 ]
 
 app.add_middleware(
@@ -43,7 +46,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
-        response.headers["Content-Security-Policy"] = "default-src 'self'; connect-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+        response.headers["Content-Security-Policy"] = (
+    "default-src 'self'; "
+    "connect-src 'self'; "
+    "img-src 'self' data: https://fastapi.tiangolo.com; "
+    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;"
+)
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         return response
