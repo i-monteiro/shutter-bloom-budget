@@ -1,5 +1,5 @@
-
 import { getToken, isAuthenticated } from './auth';
+import type { InsertLead } from '@/shared/schema';
 
 const API_URL = 'https://api-backend.fumwn4.easypanel.host/api';
 
@@ -203,4 +203,21 @@ export const updateEvent = (id: number, eventData: any) => {
 export const deleteEvent = (id: number) => 
   fetchApi(`/events/${id}`, {
     method: 'DELETE'
+  });
+
+// Lead endpoints
+export const createLead = (leadData: InsertLead) => 
+  fetch(`${API_URL}/leads`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify(leadData)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    return response.json();
   });

@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import z from 'zod';
+import { insertLeadSchema, type InsertLead } from '@/shared/schema';
 import { useToast } from '@/hooks/use-toast';
+import { createLead } from '@/utils/api';
 import {
   Form,
   FormControl,
@@ -19,19 +20,11 @@ import {
 import { Camera, ArrowRight, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nome é obrigatório"),
-  email: z.string().email("Email inválido"),
-  phone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos").max(15, "Telefone muito longo"),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 const ContactForm = () => {
   const { toast } = useToast();
   
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<InsertLead>({
+    resolver: zodResolver(insertLeadSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -40,21 +33,8 @@ const ContactForm = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: async (values: FormValues) => {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Falha ao enviar o formulário');
-      }
-      
-      return await response.json();
+    mutationFn: async (values: InsertLead) => {
+      return await createLead(values);
     },
     onSuccess: () => {
       toast({
@@ -73,7 +53,7 @@ const ContactForm = () => {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
+  const onSubmit = (values: InsertLead) => {
     mutation.mutate(values);
   };
 
