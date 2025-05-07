@@ -206,8 +206,11 @@ export const deleteEvent = (id: number) =>
   });
 
 // Lead endpoints
-export const createLead = (leadData: InsertLead) => 
-  fetch(`${API_URL}/leads`, {
+export const createLead = (leadData: InsertLead) => {
+  // Google Sheets API endpoint - Replace this with your actual Google Sheets API endpoint or N8N webhook URL
+  const sheetsApiUrl = "https://api-backend.fumwn4.easypanel.host/api/leads/googlesheet";
+  
+  return fetch(sheetsApiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -221,3 +224,4 @@ export const createLead = (leadData: InsertLead) =>
     }
     return response.json();
   });
+};

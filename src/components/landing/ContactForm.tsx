@@ -39,15 +39,16 @@ const ContactForm = () => {
     onSuccess: () => {
       toast({
         title: "Sucesso!",
-        description: "Obrigado pelo seu interesse! Entraremos em contato em breve.",
+        description: "Seus dados foram recebidos! Em breve você receberá um link para se cadastrar.",
         duration: 5000,
       });
       form.reset();
     },
     onError: (error) => {
+      console.error("Error submitting form:", error);
       toast({
         title: "Erro",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao enviar o formulário",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.",
         variant: "destructive",
       });
     },
