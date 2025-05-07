@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Camera, ArrowRight } from 'lucide-react';
+import { Camera, ArrowRight, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   email: z.string().email("Email inválido"),
+  phone: z.string().min(10, "Telefone deve ter pelo menos 10 dígitos").max(15, "Telefone muito longo"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -33,6 +35,7 @@ const ContactForm = () => {
     defaultValues: {
       name: '',
       email: '',
+      phone: '',
     },
   });
 
@@ -117,6 +120,30 @@ const ContactForm = () => {
                           className="bg-gray-900/50 border-gray-700 focus-visible:ring-purple-500 text-white"
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-200">Telefone</FormLabel>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                          <Phone className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <FormControl>
+                          <Input 
+                            placeholder="(00) 00000-0000" 
+                            type="tel"
+                            {...field}
+                            className="bg-gray-900/50 border-gray-700 focus-visible:ring-purple-500 text-white pl-10"
+                          />
+                        </FormControl>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

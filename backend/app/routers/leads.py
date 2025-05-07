@@ -1,38 +1,37 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, EmailStr
-from typing import List, Optional
-from datetime import datetime
 
-router = APIRouter()
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.models.models import Lead
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+
+router = APIRouter(
+    prefix="/leads",
+    tags=["leads"],
+    responses={404: {"description": "Not found"}},
+)
 
 class LeadCreate(BaseModel):
     name: str
     email: EmailStr
+    phone: str
 
-class Lead(LeadCreate):
-    id: int
-    created_at: datetime
-
-# Armazenamento temporário em memória para leads
-leads_db = []
-lead_id_counter = 1
-
-@router.post("/api/leads", response_model=Lead)
-async def create_lead(lead: LeadCreate):
-    global lead_id_counter
-    
-    new_lead = Lead(
-        id=lead_id_counter,
-        name=lead.name,
+@router.post("/")
+def create_lead(lead: LeadCreate, db: Session = Depends(get_db)):
+    # Cria um novo lead no banco de dados
+    db_lead = Lead(
+        name=lead.name, 
         email=lead.email,
-        created_at=datetime.now()
+        phone=lead.phone
     )
-    
-    leads_db.append(new_lead.dict())
-    lead_id_counter += 1
-    
-    return new_lead
+    db.add(db_lead)
+    db.commit()
+    db.refresh(db_lead)
+    return {"status": "success", "lead": db_lead}
 
-@router.get("/api/leads", response_model=List[Lead])
-async def get_leads():
-    return leads_db
+@router.get("/")
+def get_all_leads(db: Session = Depends(get_db)):
+    # Recupera todos os leads
+    leads = db.query(Lead).all()
+    return {"leads": leads}

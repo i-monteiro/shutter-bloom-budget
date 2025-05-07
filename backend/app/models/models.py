@@ -1,65 +1,45 @@
 
-from sqlalchemy import Column, Integer, String, Date, DateTime, Float, Boolean, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Float, func, Text, JSON
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from app.core.database import Base
-from datetime import datetime, timezone, timedelta
-from enum import Enum as PyEnum
-from sqlalchemy.sql import func
+import datetime
 
-def brasilia_now():
-    return datetime.now(timezone(timedelta(hours=-3)))
+Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=brasilia_now)
-    is_active = Column(Boolean, default=True)
-    
-    # Define relationship with RefreshToken
-    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
 
-class EventStatus(PyEnum):
-    orcamento_recebido = "orcamento_recebido"
-    proposta_enviada = "proposta_enviada"
-    proposta_aceita = "proposta_aceita"
-    proposta_recusada = "proposta_recusada"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    name = Column(String)
+    password = Column(String)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    # Relacionamentos
+    events = relationship("Event", back_populates="user")
 
 class Event(Base):
     __tablename__ = "events"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    title = Column(String, index=True)
+    description = Column(String)
+    start = Column(DateTime)
+    end = Column(DateTime)
+    location = Column(String)
+    status = Column(String, default="Pendente")  # Pendente, Confirmado, Cancelado
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
-    nomeCliente = Column(String(100), nullable=False)
-    tipoEvento = Column(String(100), nullable=False)
-    dataOrcamento = Column(Date, nullable=False)
-    dataEvento = Column(Date, nullable=False)
-    status = Column(Enum(EventStatus), default=EventStatus.orcamento_recebido)
+    # Relacionamentos
+    user = relationship("User", back_populates="events")
 
-    valorEvento = Column(Float, nullable=True)
-    iraParcelar = Column(Boolean, default=False, nullable=True)
-    quantParcelas = Column(Integer, nullable=True)
-    dataPrimeiroPagamento = Column(Date, nullable=True)
-    contatoCliente = Column(String(20), nullable=True)
-    motivoRecusa = Column(String, nullable=True)
-
-    created_at = Column(DateTime(timezone=True), default=brasilia_now)
-    updated_at = Column(DateTime(timezone=True), default=brasilia_now, onupdate=brasilia_now)
-
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    user = relationship("User", backref="events")
-
-class RefreshToken(Base):
-    __tablename__ = "refresh_tokens"
+class Lead(Base):
+    __tablename__ = "leads"
     
     id = Column(Integer, primary_key=True, index=True)
-    token = Column(String(255), unique=True, nullable=False, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    expires_at = Column(DateTime(timezone=True), nullable=False)
-    
-    # Define relationship with User
-    user = relationship("User", back_populates="refresh_tokens")
+    name = Column(String)
+    email = Column(String)
+    phone = Column(String)  # Campo adicionado para telefone
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
