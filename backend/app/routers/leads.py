@@ -1,38 +1,50 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.models.models import Lead
 from pydantic import BaseModel, EmailStr
-from typing import List, Optional
-from datetime import datetime
+from app.core.config import get_settings
+import httpx, logging
 
-router = APIRouter()
+router = APIRouter(prefix="/leads", tags=["leads"])
 
 class LeadCreate(BaseModel):
     name: str
     email: EmailStr
+    phone: str
 
-class Lead(LeadCreate):
-    id: int
-    created_at: datetime
+# ---------- helpers ----------
+async def _post(url: str, data: dict, what: str):
+    async with httpx.AsyncClient() as client:
+        r = await client.post(url, json=data, timeout=10.0)
+    if r.status_code >= 400:
+        logging.error(f"{what} webhook error {r.status_code}: {r.text}")
+        raise RuntimeError(f"{what} webhook error")
 
-# Armazenamento temporário em memória para leads
-leads_db = []
-lead_id_counter = 1
+async def _sheet_task(data: dict):
+    await _post(get_settings().N8N_GS_WEBHOOK, data, "Google Sheets")
 
-@router.post("/api/leads", response_model=Lead)
-async def create_lead(lead: LeadCreate):
-    global lead_id_counter
-    
-    new_lead = Lead(
-        id=lead_id_counter,
-        name=lead.name,
-        email=lead.email,
-        created_at=datetime.now()
+async def _wa_task(data: dict):
+    await _post(get_settings().N8N_WA_WEBHOOK, data, "WhatsApp")
+
+# ---------- endpoints ----------
+@router.post("/")
+def create_lead(
+    lead: LeadCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    # salva no banco
+    db_lead = Lead(**lead.dict())
+    db.add(db_lead)
+    db.commit()
+    db.refresh(db_lead)
+
+    # agenda chamadas aos webhooks em background
+    background_tasks.add_task(_sheet_task, lead.dict())
+    background_tasks.add_task(
+        _wa_task,
+        {**lead.dict(), "register_link": get_settings().REGISTER_LINK},
     )
-    
-    leads_db.append(new_lead.dict())
-    lead_id_counter += 1
-    
-    return new_lead
 
-@router.get("/api/leads", response_model=List[Lead])
-async def get_leads():
-    return leads_db
+    return {"status": "queued", "lead_id": db_lead.id}

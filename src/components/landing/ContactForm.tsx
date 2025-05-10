@@ -1,12 +1,14 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+// ContactForm.tsx
+import React from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
-import z from 'zod';
-import { useToast } from '@/hooks/use-toast';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { insertLeadSchema, type InsertLead } from "@/shared/schema";
+import { useToast } from "@/hooks/use-toast";
+import { createLead } from "@/utils/api";
 import {
   Form,
   FormControl,
@@ -15,75 +17,50 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Camera, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-
-const formSchema = z.object({
-  name: z.string().min(1, "Nome é obrigatório"),
-  email: z.string().email("Email inválido"),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { Camera, ArrowRight, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ContactForm = () => {
   const { toast } = useToast();
-  
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-    },
+
+  const form = useForm<InsertLead>({
+    resolver: zodResolver(insertLeadSchema),
+    defaultValues: { name: "", email: "", phone: "" },
   });
 
+  /** 1º arg: objeto com mutationFn  + callbacks  */
   const mutation = useMutation({
-    mutationFn: async (values: FormValues) => {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Falha ao enviar o formulário');
-      }
-      
-      return await response.json();
-    },
+    mutationFn: (values: InsertLead) => createLead(values),
     onSuccess: () => {
       toast({
         title: "Sucesso!",
-        description: "Obrigado pelo seu interesse! Entraremos em contato em breve.",
+        description: "Confira seu WhatsApp em instantes.",
         duration: 5000,
       });
       form.reset();
     },
-    onError: (error) => {
+    onError: () =>
       toast({
         title: "Erro",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao enviar o formulário",
+        description: "Falha ao enviar dados. Tente novamente.",
         variant: "destructive",
-      });
-    },
+      }),
   });
 
-  const onSubmit = (values: FormValues) => {
-    mutation.mutate(values);
-  };
+  /** wrapper para casar com o tipo SubmitHandler */
+  const onSubmit = (values: InsertLead) => mutation.mutate(values);
 
   return (
     <section id="contato" className="py-20 bg-gray-900 relative overflow-hidden">
-      {/* Efeitos de gradiente */}
+      {/* gradientes decorativos */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-700/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-40 -left-40 w-60 h-60 bg-purple-600/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-700/10 rounded-full blur-3xl" />
+        <div className="absolute top-40 -left-40 w-60 h-60 bg-purple-600/5 rounded-full blur-3xl" />
       </div>
-      
+
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* COLUNA FORM */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -97,13 +74,14 @@ const ContactForm = () => {
               </div>
               <h3 className="text-2xl font-bold text-white">Experimente Grátis</h3>
             </div>
-            
             <p className="text-gray-300 mb-8">
-              Teste todas as funcionalidades do Fotessence por 14 dias, sem compromisso e sem necessidade de cartão de crédito.
+              Teste todas as funcionalidades do Fotessence por 14 dias, sem
+              compromisso e sem necessidade de cartão de crédito.
             </p>
-            
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Nome */}
                 <FormField
                   control={form.control}
                   name="name"
@@ -111,9 +89,9 @@ const ContactForm = () => {
                     <FormItem>
                       <FormLabel className="text-gray-200">Nome</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Seu nome completo" 
+                        <Input
                           {...field}
+                          placeholder="Seu nome completo"
                           className="bg-gray-900/50 border-gray-700 focus-visible:ring-purple-500 text-white"
                         />
                       </FormControl>
@@ -121,7 +99,33 @@ const ContactForm = () => {
                     </FormItem>
                   )}
                 />
-                
+
+                {/* Telefone */}
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-200">Telefone</FormLabel>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                          <Phone className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="tel"
+                            placeholder="(00) 00000-0000"
+                            className="bg-gray-900/50 border-gray-700 focus-visible:ring-purple-500 text-white pl-10"
+                          />
+                        </FormControl>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Email */}
                 <FormField
                   control={form.control}
                   name="email"
@@ -129,10 +133,10 @@ const ContactForm = () => {
                     <FormItem>
                       <FormLabel className="text-gray-200">Email</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="seu@email.com" 
-                          type="email"
+                        <Input
                           {...field}
+                          type="email"
+                          placeholder="seu@email.com"
                           className="bg-gray-900/50 border-gray-700 focus-visible:ring-purple-500 text-white"
                         />
                       </FormControl>
@@ -140,43 +144,50 @@ const ContactForm = () => {
                     </FormItem>
                   )}
                 />
-                
-                <Button 
-                  type="submit" 
-                  className="w-full bg-purple-600 text-white hover:bg-purple-700 py-6 text-lg group glow-animation"
+
+                {/* Botão enviar */}
+                <Button
+                  type="submit"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-6 text-lg group glow-animation"
                   disabled={mutation.isPending}
                 >
-                  {mutation.isPending ? "Enviando..." : "Começar Teste Gratuito"}
+                  {mutation.isPending ? "Enviando…" : "Começar Teste Gratuito"}
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </form>
             </Form>
-            
+
+            {/* texto login / termos – igual ao seu código */}
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-400 mb-2">
-                Já possui uma conta?
-              </p>
+              <p className="text-sm text-gray-400 mb-2">Já possui uma conta?</p>
               <Link to="/login">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10 w-full"
                 >
                   Entrar na sua conta
                 </Button>
               </Link>
             </div>
-            
+
             <p className="text-sm text-gray-500 text-center mt-4">
-              Ao se cadastrar, você concorda com nossos 
-              <br />
-              <a href="#" className="text-purple-400 underline hover:text-purple-300">
+              Ao se cadastrar, você concorda com nossos <br />
+              <a
+                href="#"
+                className="text-purple-400 underline hover:text-purple-300"
+              >
                 Termos de Serviço
-              </a> e <a href="#" className="text-purple-400 underline hover:text-purple-300">
+              </a>{" "}
+              e{" "}
+              <a
+                href="#"
+                className="text-purple-400 underline hover:text-purple-300"
+              >
                 Política de Privacidade
               </a>
             </p>
           </motion.div>
-          
+
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}

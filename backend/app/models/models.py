@@ -1,5 +1,6 @@
 
 from sqlalchemy import Column, Integer, String, Date, DateTime, Float, Boolean, Enum, ForeignKey
+from app.core.database import Base
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from datetime import datetime, timezone, timedelta
@@ -63,3 +64,14 @@ class RefreshToken(Base):
     
     # Define relationship with User
     user = relationship("User", back_populates="refresh_tokens")
+    
+
+
+class Lead(Base):
+    __tablename__ = "leads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True)
+    phone = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -1,7 +1,8 @@
-
 import { getToken, isAuthenticated } from './auth';
+import type { InsertLead } from '@/shared/schema';
 
-const API_URL = 'https://api-backend.fumwn4.easypanel.host/api';
+export const API_URL = 'https://api-backend.fumwn4.easypanel.host/api';
+
 
 interface RequestOptions extends RequestInit {
   authenticated?: boolean;
@@ -204,3 +205,25 @@ export const deleteEvent = (id: number) =>
   fetchApi(`/events/${id}`, {
     method: 'DELETE'
   });
+
+
+/** o backend devolve { status: 'queued', lead_id: number } */
+export interface LeadResponse {
+  status: string;
+  lead_id: number;
+}
+
+export const createLead = async (data: InsertLead) => {
+  return fetch(`${API_URL}/leads/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  }).then((res) => {
+    if (!res.ok) {
+      throw new Error('Erro ao enviar os dados');
+    }
+    return res.json();
+  });
+};
